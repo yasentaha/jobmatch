@@ -30,6 +30,7 @@ CREATE TABLE `companies` (
   `description` varchar(10000) NOT NULL,
   `logo_url` varchar(1000) DEFAULT NULL,
   `contact_id` int(11) NOT NULL,
+  `sucessful_matches` int(11) DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `fk_companies_contacts1_idx` (`contact_id`),
   CONSTRAINT `fk_companies_contacts1` FOREIGN KEY (`contact_id`) REFERENCES `contacts` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
@@ -54,9 +55,9 @@ DROP TABLE IF EXISTS `contacts`;
  SET character_set_client = utf8mb4 ;
 CREATE TABLE `contacts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `address` varchar(1000) NOT NULL,
   `email` varchar(100) NOT NULL,
   `phone` varchar(100) DEFAULT NULL,
+  `address` varchar(1000) NOT NULL,
   `town_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_contacts_towns1_idx` (`town_id`),
@@ -74,35 +75,6 @@ LOCK TABLES `contacts` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `job_ad_requests`
---
-
-DROP TABLE IF EXISTS `job_ad_requests`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
- SET character_set_client = utf8mb4 ;
-CREATE TABLE `job_ad_requests` (
-  `resume_id` int(11) NOT NULL,
-  `job_ad_id` int(11) NOT NULL,
-  `match` tinyint(2) NOT NULL DEFAULT 0,
-  `requst_type` varchar(45) NOT NULL,
-  PRIMARY KEY (`resume_id`,`job_ad_id`),
-  KEY `fk_resumes_has_job_ads_job_ads1_idx` (`job_ad_id`),
-  KEY `fk_resumes_has_job_ads_resumes1_idx` (`resume_id`),
-  CONSTRAINT `fk_resumes_has_job_ads_job_ads1` FOREIGN KEY (`job_ad_id`) REFERENCES `job_ads` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_resumes_has_job_ads_resumes1` FOREIGN KEY (`resume_id`) REFERENCES `resumes` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `job_ad_requests`
---
-
-LOCK TABLES `job_ad_requests` WRITE;
-/*!40000 ALTER TABLE `job_ad_requests` DISABLE KEYS */;
-/*!40000 ALTER TABLE `job_ad_requests` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `job_ads`
 --
 
@@ -115,8 +87,8 @@ CREATE TABLE `job_ads` (
   `description` varchar(10000) NOT NULL,
   `min_salary` int(11) NOT NULL,
   `max_salary` int(11) NOT NULL,
-  `work_place` tinyint(2) NOT NULL,
-  `status` tinyint(2) NOT NULL,
+  `work_place` varchar(50) NOT NULL,
+  `status` varchar(50) DEFAULT 'active',
   `company_id` int(11) NOT NULL,
   `town_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
@@ -165,6 +137,36 @@ LOCK TABLES `job_ads_skills` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `match_requests`
+--
+
+DROP TABLE IF EXISTS `match_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `match_requests` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `resume_id` int(11) NOT NULL,
+  `job_ad_id` int(11) NOT NULL,
+  `match` tinyint(2) NOT NULL DEFAULT 0,
+  `request_from` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`,`resume_id`,`job_ad_id`),
+  KEY `fk_resumes_has_job_ads_job_ads1_idx` (`job_ad_id`),
+  KEY `fk_resumes_has_job_ads_resumes1_idx` (`resume_id`),
+  CONSTRAINT `fk_resumes_has_job_ads_job_ads1` FOREIGN KEY (`job_ad_id`) REFERENCES `job_ads` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_resumes_has_job_ads_resumes1` FOREIGN KEY (`resume_id`) REFERENCES `resumes` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `match_requests`
+--
+
+LOCK TABLES `match_requests` WRITE;
+/*!40000 ALTER TABLE `match_requests` DISABLE KEYS */;
+/*!40000 ALTER TABLE `match_requests` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `professionals`
 --
 
@@ -175,6 +177,7 @@ CREATE TABLE `professionals` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_name` varchar(50) NOT NULL,
   `password` varchar(1000) NOT NULL,
+  `role` varchar(45) DEFAULT 'regular',
   `first_name` varchar(100) NOT NULL,
   `last_name` varchar(100) NOT NULL,
   `summary` varchar(10000) CHARACTER SET utf8mb3 DEFAULT NULL,
@@ -210,10 +213,11 @@ CREATE TABLE `resumes` (
   `description` varchar(10000) NOT NULL,
   `min_salary` int(11) NOT NULL,
   `max_salary` int(11) NOT NULL,
-  `work_place` tinyint(2) NOT NULL,
-  `status` tinyint(2) DEFAULT NULL,
+  `work_place` varchar(50) NOT NULL,
+  `status` varchar(50) DEFAULT 'hidden',
   `professional_id` int(11) NOT NULL,
   `town_id` int(11) NOT NULL,
+  `main` tinyint(2) DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `fk_resumes_professionals1_idx` (`professional_id`),
   KEY `fk_resumes_towns1_idx` (`town_id`),
@@ -314,4 +318,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-10-23 22:06:56
+-- Dump completed on 2022-10-24 17:18:57
