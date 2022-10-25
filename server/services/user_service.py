@@ -26,3 +26,20 @@ def try_login(user_name: str, password: str) -> User | None:
     return user if user and user.password == hashed_password else None
 
 
+def create_user(user_name: str, password: str, insert_data_func=database.insert_query) -> User | None:
+    
+    password = _hash_password(password)
+
+    try:
+        generated_id = insert_data_func(
+            'INSERT INTO users(user_name, password, role) VALUES (?,?,?)',
+            (user_name, password, Role.REGULAR))
+
+        return User(id=generated_id, 
+                    user_name=user_name, 
+                    password='', 
+                    role=Role.REGULAR)
+
+    except IntegrityError:
+        return None
+
