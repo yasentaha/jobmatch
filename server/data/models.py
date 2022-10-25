@@ -6,6 +6,10 @@ class LoginData(BaseModel):
     user_name: str
     password: str
 
+class User(BaseModel):
+    id: int
+    user_name: str
+    password: str
 
 class Professional(BaseModel):
     id: int | None
