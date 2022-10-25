@@ -64,3 +64,25 @@ def get_town_id_by_name(town_name:str) -> int:
     return town_id
 
 
+#WE WILL USE THE ABOVE USER AND CONTACT IDS INTO THIS:
+def create_professional(user_id: int, 
+                        first_name:str, 
+                        last_name:str,
+                        contact_id, 
+                        summary:str=None, 
+                        image_url:str=None, 
+                        insert_data_func=database.insert_query) -> Professional | None:
+    
+    generated_id = insert_data_func(
+            '''INSERT INTO professionals
+                            (user_id, 
+                            first_name, 
+                            last_name, 
+                            summary,
+                            image_url, contact_id) VALUES (?,?,?,?,?,?)''',
+            (user_id, first_name, last_name, summary, image_url, contact_id))
+
+    if generated_id:
+        return Professional(user_id,first_name,last_name,summary,image_url)
+
+
