@@ -7,8 +7,10 @@ def get_all_active_resumes_by_professional_id(professional_id: int):
         '''SELECT r.id
                     FROM resumes as r
                     WHERE r.professional_id=? AND r.status=?''', (professional_id, f'%{Status.ACTIVE}%'))
-
-    return (id for id in data)
+    if data:
+        return (id for id in data)
+    else:
+        return [0]
 
 
 def get_all_archived_resumes_by_professional_id(professional_id: int):
@@ -17,7 +19,10 @@ def get_all_archived_resumes_by_professional_id(professional_id: int):
                     FROM resumes as r
                     WHERE r.professional_id=? AND r.status=?''', (professional_id, f'%{Status.ARCHIVED}%'))
 
-    return (id for id in data)
+    if data:
+        return (id for id in data)
+    else:
+        return [0]
 
 
 def get_all_skills_resume_by_id(id: int):
