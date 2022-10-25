@@ -16,6 +16,21 @@ def create_token(user: User) -> str:
 
     return token
 
+def decode_username_from_token(token):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        user_name: str = payload.get('user_name')
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid credentials')
+    
+    return user_name
+
+
+def from_token(token: str) -> User | None:
+    return find_by_username(decode_username_from_token(token))
+
+
+
 
 
 
