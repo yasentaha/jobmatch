@@ -18,3 +18,11 @@ def find_by_username(user_name: str, get_data_func = database.read_query) -> Use
     return next((User(id, user_name, password) for id, user_name, password in data), None)
 
 
+def try_login(user_name: str, password: str) -> User | None:
+    user = find_by_username(user_name)
+
+    hashed_password = _hash_password(password)
+
+    return user if user and user.password == hashed_password else None
+
+
