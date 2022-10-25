@@ -10,12 +10,15 @@ class User(BaseModel):
     id: int
     user_name: str
     password: str
+    role: str
+    
+    def is_admin(self):
+        return self.role == Role.ADMIN
 
 class Professional(BaseModel):
     id: int | None
     user_name: str
     password: str
-    role: str
     first_name: str
     last_name: str
     summary: str
@@ -29,8 +32,7 @@ class Professional(BaseModel):
     # active_resumes: list[int] #ids of active resumes
     # hidden_resumes: list[int]
 
-    def is_admin(self):
-        return self.role == Role.ADMIN
+
 
     @classmethod
     def from_query_result(cls, id, user_name, password, role, first_name, last_name, summary, busy, image_url, email,
