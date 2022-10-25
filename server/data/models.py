@@ -99,9 +99,10 @@ class Resume(BaseModel):
     max_salary: int
     work_place: str
     status: str
-    town_name: str  # if town_name not in towns, catch error
-    skills: list[Skill]
-    match_request_ids: list[int]
+    town_id: int  # if town_name not in towns, catch error
+    main: int
+    # skills: list[Skill] # go to response model
+    # match_request_ids: list[int]
 
 
 class Company(BaseModel):

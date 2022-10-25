@@ -1,5 +1,5 @@
 from server.data.database import read_query
-from server.data.models import Professional
+from server.data.models import Professional, Resume, Status
 
 
 def all(search: str = None):
@@ -33,9 +33,8 @@ def get_by_id(id: int):
             LEFT JOIN
             contacts as c
             ON p.contact_id=c.id
-            WHERE p.id=?'''(id,))
+            WHERE p.id=?''', (id,))
 
     return (Professional.from_query_result(*row) for row in data)
 
-def get_all_active_resumes_by_id(id:int):
-    pass
+
