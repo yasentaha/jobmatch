@@ -30,7 +30,17 @@ def from_token(token: str) -> User | None:
     return find_by_username(decode_username_from_token(token))
 
 
+def is_authenticated(token) -> bool:
+    user_name = decode_username_from_token(token)
 
+    return any(read_query('SELECT 1 FROM users where user_name = ?', (user_name,)))
+
+
+def get_user_or_raise_401(token: str) -> User:
+    if not is_authenticated(token):
+        raise HTTPException(status_code=401)
+    
+    return from_token(token)
 
 
 
