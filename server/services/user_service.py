@@ -45,6 +45,7 @@ def create_user(user_name: str, password: str, insert_data_func=database.insert_
     except IntegrityError:
         return None
 
+
 def create_contact(email:str, address:str, town_id:int, phone:str=None, insert_data_func=database.insert_query) -> int | None:
     try:
         generated_id = insert_data_func(
@@ -57,5 +58,9 @@ def create_contact(email:str, address:str, town_id:int, phone:str=None, insert_d
         return None
 
 
+def get_town_id_by_name(town_name:str) -> int:
+    town_id = (read_query_single_element('SELECT id from towns where name = ?', (town_name,)))[0]
+
+    return town_id
 
 
