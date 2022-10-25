@@ -25,8 +25,7 @@ def try_login(user_name: str, password: str) -> User | None:
 
     return user if user and user.password == hashed_password else None
 
-#ATTENTION: NEED TO FIX PROFESSIONAL AND COMPANY MODELS ADD CONTACT ID ONLY AND REMOVE USERNAME PASS
-#FULL INFO IN RESPONSE MODELS
+
 
 def create_user(user_name: str, password: str, insert_data_func=database.insert_query) -> User | None:
     
@@ -47,6 +46,7 @@ def create_user(user_name: str, password: str, insert_data_func=database.insert_
 
 
 def create_contact(email:str, address:str, town_id:int, phone:str=None, insert_data_func=database.insert_query) -> int | None:
+#AGAIN TRY EXCEPT BLOCK BECAUSE EMAIL NEEDS TO BE UNIQUE CHANGE THIS IN DB!!
     try:
         generated_id = insert_data_func(
             'INSERT INTO contacts(email, phone, address, town_id) VALUES (?,?,?,?)',
@@ -101,3 +101,16 @@ def valid_email(email: str):
     else:
         return None
 
+
+#ATTENTION: 
+'''
+LEFT TO DO:
+- NEED TO FIX PROFESSIONAL AND COMPANY MODELS ADD CONTACT ID ONLY AND REMOVE USERNAME PASS 
+FULL INFO IN RESPONSE MODELS
+- CREATE RESPONSE MODELS FOR ABOVE
+- GET PROFESSIONAL BY ID
+- GET COMPANY BY ID
+- GET USER BY ID (LESS INFO??)
+- ROUTERS - REGISTER PROF, REGISTER COMP, LOG IN, ADMIN???
+- UNIT TESTS
+'''
