@@ -2,22 +2,30 @@ from server.data.database import read_query
 from server.data.models import Resume, Status
 
 
-def get_all_active_resumes_by_id(id: int):
+def get_all_active_resumes_by_professional_id(professional_id: int):
     data = read_query(
-        '''SELECT r.id, r.title, r.description,r.min_salary,r.max_salary,r.work_place,r.status,r.town_id,r.main
+        '''SELECT r.id
                     FROM resumes as r
-                    WHERE r.id=? AND r.status=?''', (id, f'%{Status.ACTIVE}%'))
+                    WHERE r.professional_id=? AND r.status=?''', (professional_id, f'%{Status.ACTIVE}%'))
 
-    return (Resume(id=id, title=title, description=description, min_salary=min_salary, max_salary=max_salary,
-                   work_place=work_place, status=status, town_id=town_id, main=main)
-            for id, title, description, min_salary, max_salary, work_place, status, town_id, main in data)
+    return (id for id in data)
 
-def get_all_archived_resumes_by_id(id: int):
+
+def get_all_archived_resumes_by_professional_id(professional_id: int):
     data = read_query(
-        '''SELECT r.id, r.title, r.description,r.min_salary,r.max_salary,r.work_place,r.status,r.town_id,r.main
+        '''SELECT r.id
                     FROM resumes as r
-                    WHERE r.id=? AND r.status=?''', (id, f'%{Status.ARCHIVED}%'))
+                    WHERE r.professional_id=? AND r.status=?''', (professional_id, f'%{Status.ARCHIVED}%'))
 
-    return (Resume(id=id, title=title, description=description, min_salary=min_salary, max_salary=max_salary,
-                   work_place=work_place, status=status, town_id=town_id, main=main)
-            for id, title, description, min_salary, max_salary, work_place, status, town_id, main in data)
+    return (id for id in data)
+
+
+def get_all_skills_resume_by_id(id: int):
+    data = read_query(
+        '''SELECT s.id,s.name,r_s.stars
+                 FROM skills as s
+                 LEFT JOIN
+                resume_skils as r_s
+                ON s.id=r_s.resume_id
+                    WHERE s.'''
+    )
