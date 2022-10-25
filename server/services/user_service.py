@@ -86,3 +86,18 @@ def create_professional(user_id: int,
         return Professional(user_id,first_name,last_name,summary,image_url)
 
 
+def valid_username(user_name: str):
+    '''Expects a user name as string, and if valid, it will return it, otherwise it will return None.'''
+    if len(user_name) < 2 or len(user_name) > 30:
+        return None
+    else:
+        return user_name
+
+def valid_email(email: str):
+    '''Expects an email address as string, and if valid, it will return it, otherwise it will return None.'''
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    if (re.fullmatch(regex, email)):
+        return email
+    else:
+        return None
+
