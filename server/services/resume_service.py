@@ -41,3 +41,5 @@ def get_number_of_all_active_resumes_by_company():
     data = read_query(
         '''SELECT r.id FROM RESUMES
         WHERE r.status=?''',(f'%{Status.ACTIVE}%',))
+
+    return len(data)
