@@ -6,15 +6,17 @@ from server.data.models import Company, JobAd, Status
 def get_company_by_id(id: int):
     
     data = read_query(
-        '''SELECT c.id, c.user_name, c.password,c.company_name,p.description,c.logo_url,c.successful_matches
+        '''SELECT u.id, u.user_name, u.password,c.company_name,p.description,c.logo_url,c.successful_matches
         ct.email,ct.phone,ct.address,t.name
         FROM 
-            companies as c
+            users as u
+        LEFT JOIN
+            companies AS c ON c.users_id=u.id
         LEFT JOIN
             contacts AS ct ON c.contact_id=ct.id
         LEFT JOIN
             towns AS t ON ct.town_id=t.id
-        WHERE c.id=?''', (id,))
+        WHERE u.id=?''', (id,))
 
     return (Company.from_query_result(*row) for row in data)
 
@@ -22,22 +24,26 @@ def get_all_companies(search: str = None):
     
     if search is None:
         data = read_query(
-            '''SELECT c.id, c.user_name, c.password,c.company_name,p.description,c.logo_url,c.successful_matches
+            '''SELECT u.id, u.user_name, u.password,c.company_name,p.description,c.logo_url,c.successful_matches
         ct.email,ct.phone,ct.address,t.name
         FROM 
-            companies as c
+            users as u
+        LEFT JOIN
+            companies AS c ON c.users_id=u.id
         LEFT JOIN
             contacts AS ct ON c.contact_id=ct.id
         LEFT JOIN
             towns AS t ON ct.town_id=t.id
-        WHERE c.id=?''')
+        WHERE u.id=?''')
 
     else:
         data = read_query(
-            '''SELECT c.id, c.user_name, c.password,c.company_name,p.description,c.logo_url,c.successful_matches
+            '''SELECT u.id, u.user_name, u.password,c.company_name,p.description,c.logo_url,c.successful_matches
         ct.email,ct.phone,ct.address,t.name
         FROM 
-            companies as c
+            users as u
+        LEFT JOIN
+            companies AS c ON c.users_id=u.id
         LEFT JOIN
             contacts AS ct ON c.contact_id=ct.id
         LEFT JOIN
@@ -45,6 +51,17 @@ def get_all_companies(search: str = None):
         WHERE c.company_name LIKE ?''', (f'%{search}%',))
 
     return (Company.from_query_result(*row) for row in data)
+
+def get_number_of_all_active_job_ads_by_company_id(company_id: int):
+    data = read_query(
+        '''SELECT j.id
+                FROM job_ads as j
+                    WHERE j.company_id=? AND j.status=?''', (company_id, f'%{Status.ACTIVE}%'))
+    if data:
+        return len(data)
+    else:
+        return [0]
+
 
 def update_successful_matches(id: int):
     current_company_matches = (read_query_single_element('SELECT successful_matches from companies where id=?', (id,)))[0]
