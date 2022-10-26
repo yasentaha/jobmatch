@@ -8,13 +8,28 @@ class LoginData(BaseModel):
 
 
 class User(BaseModel):
-    id: int
+    id: int | None
     user_name: str
     password: str
     role: str
 
     def is_admin(self):
         return self.role == Role.ADMIN
+
+class Contact(BaseModel):
+    id: int | None
+    email: str
+    phone: str | None
+    address: str
+    town_id: int
+
+class ProfessionalInfo(BaseModel):
+    id: int | None
+    first_name: str
+    last_name: str
+    summary: str
+    busy: bool
+    image_url: str
 
 
 class Professional(BaseModel):
@@ -88,7 +103,7 @@ class ProfessionalRegisterData(BaseModel):
     email: str
     phone: str | None
     address: str
-    town_id: int
+    town_name: str
 
 
 class Resume(BaseModel):
@@ -104,6 +119,11 @@ class Resume(BaseModel):
     # skills: list[Skill] # go to response model
     # match_request_ids: list[int]
 
+class CompanyInfo(BaseModel):
+    id: int | None
+    company_name: str
+    description: str
+    logo_url: str
 
 class Company(BaseModel):
     id: int | None
@@ -141,7 +161,7 @@ class CompanyRegisterData(BaseModel):
     email: str
     phone: str | None
     address: str
-    town_id: int
+    town_name: str
 
 
 class JobAd(BaseModel):
