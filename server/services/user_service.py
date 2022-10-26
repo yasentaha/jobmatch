@@ -5,6 +5,8 @@ from mariadb import IntegrityError
 from datetime import date
 import re
 
+from server.data.models import Contact
+
 def _hash_password(password: str):
     from hashlib import sha256
     return sha256(password.encode('utf-8')).hexdigest()
@@ -45,14 +47,14 @@ def create_user(user_name: str, password: str, insert_data_func=database.insert_
         return None
 
 
-def create_contact(email:str, address:str, town_id:int, phone:str=None, insert_data_func=database.insert_query) -> int | None:
+def create_contact(email:str, address:str, town_id:int, phone:str=None, insert_data_func=database.insert_query) -> Contact | None:
 #AGAIN TRY EXCEPT BLOCK BECAUSE EMAIL NEEDS TO BE UNIQUE CHANGE THIS IN DB!!
     try:
         generated_id = insert_data_func(
             'INSERT INTO contacts(email, phone, address, town_id) VALUES (?,?,?,?)',
             (email, address, town_id, phone))
 
-        return generated_id
+        return Contact(generated_id, email, phone, address, town_id)
 
     except IntegrityError:
         return None
