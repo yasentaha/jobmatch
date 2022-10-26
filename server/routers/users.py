@@ -72,6 +72,18 @@ def register_company(data: CompanyRegisterData):
                             data.town_name)
 
 
+@users_router.post('/login')
+def login(data: LoginData):
+    user = user_service.try_login(data.user_name, data.password)
+
+    if user:
+        token = create_token(user)
+        return {'token': token}
+    
+    else:
+        return BadRequest('Invalid login data')
+
+
 def mandatory_fields_user_contact(user_name:str, password, confirm_password:str, email:str, address:str, town_name:str):
     if not user_name:
         return BadRequest('User Name field is mandatory!')
