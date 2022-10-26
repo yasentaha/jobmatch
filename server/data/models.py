@@ -96,6 +96,7 @@ class Status:
 class ProfessionalRegisterData(BaseModel):
     user_name: str
     password: str
+    confirm_password: str
     first_name: str
     last_name: str
     summary: str | None
@@ -161,6 +162,7 @@ class Company(BaseModel):
 class CompanyRegisterData(BaseModel):
     user_name: str
     password: str
+    confirm_password: str
     company_name: str
     description: str
     logo_url: str | None
@@ -221,3 +223,15 @@ class Town(BaseModel):
     all_towns = [SOFIA, PLOVDIV, RUSE, VARNA, BURGAS, VIDIN, MONTANA, PERNIK, KIUSTENDIL, BLAGOEVGRAD, VRATSA,
                  PAZARDZHIK, SMOLIAN, PLEVEN, LOVECH, VELIK0TARNOVO, GABROVO, STARAZAGORA, HASKOVO, KARDZHALI,
                  TARGOVISHTE, SLIVEN, YAMBOL, SILISTRA, RAZGRAD, SHUMEN, DOBRICH]
+
+class ProfessionalResponse(BaseModel):
+    id: int
+    user_name: str
+    first_name: str
+    last_name: str
+    summary: str | None
+    image_url: str | None
+    email: str
+    phone: str | None
+    address: str
+    town_name: str
