@@ -90,10 +90,12 @@ CREATE TABLE `job_ads` (
   `max_salary` int(11) NOT NULL,
   `work_place` varchar(50) NOT NULL,
   `status` varchar(50) DEFAULT 'active',
-  `company_id` int(11) NOT NULL,
   `town_id` int(11) NOT NULL,
+  `company_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_job_ads_towns1_idx` (`town_id`),
+  KEY `fk_job_ads_companies1_idx` (`company_id`),
+  CONSTRAINT `fk_job_ads_companies1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_job_ads_towns1` FOREIGN KEY (`town_id`) REFERENCES `towns` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -212,11 +214,13 @@ CREATE TABLE `resumes` (
   `max_salary` int(11) NOT NULL,
   `work_place` varchar(50) NOT NULL,
   `status` varchar(50) DEFAULT 'hidden',
-  `professional_id` int(11) NOT NULL,
   `town_id` int(11) NOT NULL,
   `main` tinyint(2) DEFAULT 0,
+  `professional_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_resumes_towns1_idx` (`town_id`),
+  KEY `fk_resumes_professionals1_idx` (`professional_id`),
+  CONSTRAINT `fk_resumes_professionals1` FOREIGN KEY (`professional_id`) REFERENCES `professionals` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_resumes_towns1` FOREIGN KEY (`town_id`) REFERENCES `towns` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -340,4 +344,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-10-26 14:45:06
+-- Dump completed on 2022-10-26 17:23:21
