@@ -1,4 +1,4 @@
-from server.data.database import read_query
+from server.data.database import read_query, insert_query
 from server.data.models import Professional, Resume, Status
 
 
@@ -45,3 +45,17 @@ def get_by_id(id: int):
             WHERE u.id=?''', (id,))
 
     return (Professional.from_query_result(*row) for row in data)
+
+#
+# def create(professional: Professional, insert_data=None):
+#     user=get_user_or
+#     if insert_data is None:
+#         insert_data = insert_query
+#
+#     professional_generated_id = insert_data(
+#         'INSERT INTO professionals(user_name,password,first_name,last_name,summary,busy,image_url,email,phone,address,town_id) values(?,?,?,?,?,?,?,?,?,?,?)',
+#         (professional.user_name, password,))
+#
+#     professional_generated_id.id = professional_generated_id
+#
+#     return
