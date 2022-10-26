@@ -52,6 +52,17 @@ def get_all_companies(search: str = None):
 
     return (Company.from_query_result(*row) for row in data)
 
+def get_number_of_all_active_job_ads_by_company_id(company_id: int):
+    data = read_query(
+        '''SELECT j.id
+                FROM job_ads as j
+                    WHERE j.company_id=? AND j.status=?''', (company_id, f'%{Status.ACTIVE}%'))
+    if data:
+        return len(data)
+    else:
+        return [0]
+
+
 def update_successful_matches(id: int):
     current_company_matches = (read_query_single_element('SELECT successful_matches from companies where id=?', (id,)))[0]
 
