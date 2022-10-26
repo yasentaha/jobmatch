@@ -130,10 +130,7 @@ def get_user_by_id(id:int, get_data_func = database.read_query) -> User | None:
     return next((User(id=id, user_name=user_name, password='', role=role) for id, user_name, password, role in data), None)
 
 def password_confirmation(password:str, confirm_password:str):
-    if password == confirm_password:
-        return True
-    else:
-        return False
+    return password == confirm_password
 
 
 #ATTENTION: 
