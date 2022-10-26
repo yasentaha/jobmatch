@@ -85,6 +85,24 @@ def create_professional(user_id: int,
     if generated_id:
         return Professional(user_id,first_name,last_name,summary,image_url)
 
+def create_company(user_id: int, 
+                        company_name:str, 
+                        description:str,
+                        contact_id, 
+                        logo_url:str=None, 
+                        insert_data_func=database.insert_query) -> Company | None:
+    
+    generated_id = insert_data_func(
+            '''INSERT INTO professionals
+                            (user_id, 
+                            company_name, 
+                            description, 
+                            logo_url, contact_id) VALUES (?,?,?,?,?)''',
+            (user_id, company_name, description, logo_url, contact_id))
+
+    if generated_id:
+        return Company(user_id,company_name,description,logo_url)
+
 
 def valid_username(user_name: str):
     '''Expects a user name as string, and if valid, it will return it, otherwise it will return None.'''

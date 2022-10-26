@@ -23,17 +23,17 @@ DROP TABLE IF EXISTS `companies`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
  SET character_set_client = utf8mb4 ;
 CREATE TABLE `companies` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_name` varchar(50) NOT NULL,
-  `password` varchar(1000) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `company_name` varchar(100) NOT NULL,
   `description` varchar(10000) NOT NULL,
   `logo_url` varchar(1000) DEFAULT NULL,
   `contact_id` int(11) NOT NULL,
   `sucessful_matches` int(11) DEFAULT 0,
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`user_id`),
   KEY `fk_companies_contacts1_idx` (`contact_id`),
-  CONSTRAINT `fk_companies_contacts1` FOREIGN KEY (`contact_id`) REFERENCES `contacts` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  KEY `fk_companies_users1_idx` (`user_id`),
+  CONSTRAINT `fk_companies_contacts1` FOREIGN KEY (`contact_id`) REFERENCES `contacts` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_companies_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -60,6 +60,7 @@ CREATE TABLE `contacts` (
   `address` varchar(1000) NOT NULL,
   `town_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `email_UNIQUE` (`email`),
   KEY `fk_contacts_towns1_idx` (`town_id`),
   CONSTRAINT `fk_contacts_towns1` FOREIGN KEY (`town_id`) REFERENCES `towns` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -92,9 +93,7 @@ CREATE TABLE `job_ads` (
   `company_id` int(11) NOT NULL,
   `town_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `fk_job_ads_companies1_idx` (`company_id`),
   KEY `fk_job_ads_towns1_idx` (`town_id`),
-  CONSTRAINT `fk_job_ads_companies1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_job_ads_towns1` FOREIGN KEY (`town_id`) REFERENCES `towns` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -174,20 +173,18 @@ DROP TABLE IF EXISTS `professionals`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
  SET character_set_client = utf8mb4 ;
 CREATE TABLE `professionals` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_name` varchar(50) NOT NULL,
-  `password` varchar(1000) NOT NULL,
-  `role` varchar(45) DEFAULT 'regular',
+  `user_id` int(11) NOT NULL,
   `first_name` varchar(100) NOT NULL,
   `last_name` varchar(100) NOT NULL,
-  `summary` varchar(10000) CHARACTER SET utf8mb3 DEFAULT NULL,
+  `summary` varchar(10000) DEFAULT NULL,
   `busy` tinyint(2) DEFAULT 0,
   `image_url` varchar(1000) DEFAULT NULL,
   `contact_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `user_name_UNIQUE` (`user_name`),
+  PRIMARY KEY (`user_id`),
   KEY `fk_professionals_contacts1_idx` (`contact_id`),
-  CONSTRAINT `fk_professionals_contacts1` FOREIGN KEY (`contact_id`) REFERENCES `contacts` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  KEY `fk_professionals_users1_idx` (`user_id`),
+  CONSTRAINT `fk_professionals_contacts1` FOREIGN KEY (`contact_id`) REFERENCES `contacts` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_professionals_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -219,9 +216,7 @@ CREATE TABLE `resumes` (
   `town_id` int(11) NOT NULL,
   `main` tinyint(2) DEFAULT 0,
   PRIMARY KEY (`id`),
-  KEY `fk_resumes_professionals1_idx` (`professional_id`),
   KEY `fk_resumes_towns1_idx` (`town_id`),
-  CONSTRAINT `fk_resumes_professionals1` FOREIGN KEY (`professional_id`) REFERENCES `professionals` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_resumes_towns1` FOREIGN KEY (`town_id`) REFERENCES `towns` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -297,7 +292,7 @@ CREATE TABLE `towns` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -306,7 +301,34 @@ CREATE TABLE `towns` (
 
 LOCK TABLES `towns` WRITE;
 /*!40000 ALTER TABLE `towns` DISABLE KEYS */;
+INSERT INTO `towns` VALUES (1,'Sofia'),(2,'Plovdiv'),(3,'Ruse'),(4,'Varna'),(5,'Burgas'),(6,'Vidin'),(7,'Montana'),(8,'Pernik'),(9,'Kiustendil'),(10,'Blagoevgrad'),(11,'Vratsa'),(12,'Pazardzhik'),(13,'Smolian'),(14,'Pleven'),(15,'Lovech'),(16,'Veliko Tarnovo'),(17,'Gabrovo'),(18,'Stara Zagora'),(19,'Haskovo'),(20,'Kardzhali'),(21,'Targovishte'),(22,'Sliven'),(23,'Yambol'),(24,'Silistra'),(25,'Razgrad'),(26,'Shumen'),(27,'Dobrich');
 /*!40000 ALTER TABLE `towns` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_name` varchar(50) NOT NULL,
+  `password` varchar(1000) NOT NULL,
+  `role` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_name_UNIQUE` (`user_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `users`
+--
+
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -318,4 +340,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-10-24 17:18:57
+-- Dump completed on 2022-10-26 14:45:06
