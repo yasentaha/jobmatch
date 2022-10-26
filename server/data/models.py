@@ -6,14 +6,16 @@ class LoginData(BaseModel):
     user_name: str
     password: str
 
+
 class User(BaseModel):
     id: int
     user_name: str
     password: str
     role: str
-    
+
     def is_admin(self):
         return self.role == Role.ADMIN
+
 
 class Professional(BaseModel):
     id: int | None
@@ -31,8 +33,6 @@ class Professional(BaseModel):
 
     # active_resumes: list[int] #ids of active resumes
     # hidden_resumes: list[int]
-
-
 
     @classmethod
     def from_query_result(cls, id, user_name, password, role, first_name, last_name, summary, busy, image_url, email,
@@ -167,3 +167,37 @@ class MatchRequestResponse(BaseModel):
     id: int
     job_ad: JobAd
     resume: Resume  # MOJEM LI DA GO NAPRAVIM EDNO DO DRUGO
+
+
+class Town(BaseModel):
+    SOFIA = 'Sofia'
+    PLOVDIV = 'Plovdiv'
+    RUSE = 'Ruse'
+    VARNA = 'Varna'
+    BURGAS = 'Burgas'
+    VIDIN = 'Vidin'
+    MONTANA = 'Montana'
+    PERNIK = 'Pernik'
+    KIUSTENDIL = 'Kiustendil'
+    BLAGOEVGRAD = 'Blagoevgrad'
+    VRATSA = 'Vratsa'
+    PAZARDZHIK = 'Pazardzhik'
+    SMOLIAN = 'Smolian'
+    PLEVEN = 'Pleven'
+    LOVECH = 'Lovech'
+    VELIK0TARNOVO = 'Veliko Tarnovo'
+    GABROVO = 'Gabrovo'
+    STARAZAGORA = 'Stara Zagora'
+    HASKOVO = 'Haskovo'
+    KARDZHALI = 'Kardzhali'
+    TARGOVISHTE = 'Targovishte'
+    SLIVEN = 'Sliven'
+    YAMBOL = 'Yambol'
+    SILISTRA = 'Silistra'
+    RAZGRAD = 'Razgrad'
+    SHUMEN = 'Shumen'
+    DOBRICH = 'Dobrich'
+
+    all_towns = [SOFIA, PLOVDIV, RUSE, VARNA, BURGAS, VIDIN, MONTANA, PERNIK, KIUSTENDIL, BLAGOEVGRAD, VRATSA,
+                 PAZARDZHIK, SMOLIAN, PLEVEN, LOVECH, VELIK0TARNOVO, GABROVO, STARAZAGORA, HASKOVO, KARDZHALI,
+                 TARGOVISHTE, SLIVEN, YAMBOL, SILISTRA, RAZGRAD, SHUMEN, DOBRICH]
