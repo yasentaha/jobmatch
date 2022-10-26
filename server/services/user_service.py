@@ -7,6 +7,7 @@ import re
 
 from server.data.models import Contact
 
+
 def _hash_password(password: str):
     from hashlib import sha256
     return sha256(password.encode('utf-8')).hexdigest()
@@ -127,6 +128,13 @@ def get_user_by_id(id:int, get_data_func = database.read_query) -> User | None:
         (id,))
 
     return next((User(id=id, user_name=user_name, password='', role=role) for id, user_name, password, role in data), None)
+
+def password_confirmation(password:str, confirm_password:str):
+    if password == confirm_password:
+        return True
+    else:
+        return False
+
 
 #ATTENTION: 
 '''
