@@ -8,7 +8,37 @@ from services import user_service
 
 users_router = APIRouter(prefix='/users')
 
+@users_router.post('/professionals/register')
+def register(data: ProfessionalRegisterData):
 
+    mandatory_fields_user_contact(data.user_name, data.password, data.confirm_password, data.email, data.address, data.town_name)
+    
+    mandatory_fields_professional(data.first_name, data.last_name)
+
+    town_id = user_service.get_town_id_by_name(data.town_name)
+    if not town_id:
+        return NotFound(f'Town {data.town_name} is not a valid Bulgarian District Town name')
+
+    user = user_service.create_user(data.user_name, data.password)
+    if not user:
+        return BadRequest(f'Username {data.user_name} is taken.')
+
+    contact = user_service.create_contact(data.email, data.address, town_id, data.phone)
+    if not contact:
+            return BadRequest(f'User with {data.email} already exists.')
+    
+    professional = user_service.create_professional(user.id, data.first_name, data.last_name, contact.id, data.summary, data.image_url)
+
+    return ProfessionalResponse(professional.id, 
+                                professional.user_name, 
+                                professional.first_name,
+                                professional.last_name,
+                                professional.summary,
+                                professional.image_url,
+                                professional.email,
+                                professional.phone,
+                                professional.address,
+                                data.town_name)
 
 def mandatory_fields_user_contact(user_name:str, password, confirm_password:str, email:str, address:str, town_name:str):
     if not user_name:
@@ -46,6 +76,9 @@ def mandatory_fields_professional(first_name:str, last_name: str):
 
     if not last_name:
         return BadRequest('Last Name field is mandatory!')
+
+    pass
+
     
 def mandatory_fields_company(company_name:str, description: str):
     if not company_name:
@@ -53,5 +86,7 @@ def mandatory_fields_company(company_name:str, description: str):
 
     if not description:
         return BadRequest('Description field is mandatory!')
+
+    pass
 
     
