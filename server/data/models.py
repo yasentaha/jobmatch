@@ -236,6 +236,21 @@ class ProfessionalResponse(BaseModel):
     address: str
     town_name: str
 
+    @classmethod
+    def from_query_result(cls, id, user_name, first_name, last_name, summary, image_url, email,
+                          phone, address, town_name):
+        return cls(
+            id=id,
+            user_name=user_name,
+            first_name=first_name,
+            last_name=last_name,
+            summary=summary,
+            image_url=image_url,
+            email=email,
+            phone=phone,
+            address=address,
+            town_name=town_name)
+
 class CompanyResponse(BaseModel):
     id: int
     user_name: str
