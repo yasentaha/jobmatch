@@ -121,6 +121,12 @@ def valid_email(email: str):
     else:
         return None
 
+def get_user_by_id(id:int, get_data_func = database.read_query) -> User | None:
+    data = get_data_func(
+        'SELECT id, user_name, password, role FROM users WHERE id = ?',
+        (id,))
+
+    return next((User(id=id, user_name=user_name, password='', role=role) for id, user_name, password, role in data), None)
 
 #ATTENTION: 
 '''
