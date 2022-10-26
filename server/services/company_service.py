@@ -6,15 +6,17 @@ from server.data.models import Company, JobAd, Status
 def get_company_by_id(id: int):
     
     data = read_query(
-        '''SELECT c.id, c.user_name, c.password,c.company_name,p.description,c.logo_url,c.successful_matches
+        '''SELECT u.id, u.user_name, u.password,c.company_name,p.description,c.logo_url,c.successful_matches
         ct.email,ct.phone,ct.address,t.name
         FROM 
-            companies as c
+            users as u
+        LEFT JOIN
+            companies AS c ON c.users_id=u.id
         LEFT JOIN
             contacts AS ct ON c.contact_id=ct.id
         LEFT JOIN
             towns AS t ON ct.town_id=t.id
-        WHERE c.id=?''', (id,))
+        WHERE u.id=?''', (id,))
 
     return (Company.from_query_result(*row) for row in data)
 
@@ -22,22 +24,26 @@ def get_all_companies(search: str = None):
     
     if search is None:
         data = read_query(
-            '''SELECT c.id, c.user_name, c.password,c.company_name,p.description,c.logo_url,c.successful_matches
+            '''SELECT u.id, u.user_name, u.password,c.company_name,p.description,c.logo_url,c.successful_matches
         ct.email,ct.phone,ct.address,t.name
         FROM 
-            companies as c
+            users as u
+        LEFT JOIN
+            companies AS c ON c.users_id=u.id
         LEFT JOIN
             contacts AS ct ON c.contact_id=ct.id
         LEFT JOIN
             towns AS t ON ct.town_id=t.id
-        WHERE c.id=?''')
+        WHERE u.id=?''')
 
     else:
         data = read_query(
-            '''SELECT c.id, c.user_name, c.password,c.company_name,p.description,c.logo_url,c.successful_matches
+            '''SELECT u.id, u.user_name, u.password,c.company_name,p.description,c.logo_url,c.successful_matches
         ct.email,ct.phone,ct.address,t.name
         FROM 
-            companies as c
+            users as u
+        LEFT JOIN
+            companies AS c ON c.users_id=u.id
         LEFT JOIN
             contacts AS ct ON c.contact_id=ct.id
         LEFT JOIN
