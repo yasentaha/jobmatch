@@ -235,3 +235,14 @@ class ProfessionalResponse(BaseModel):
     phone: str | None
     address: str
     town_name: str
+
+class CompanyResponse(BaseModel):
+    id: int
+    user_name: str
+    company_name: str
+    description: str
+    logo_url: str | None
+    email: str
+    phone: str | None
+    address: str
+    town_name: str
