@@ -138,18 +138,24 @@ class Company(BaseModel):
     town_id: int
     successful_matches: int
 
-    active_job_ads: list[int]  # ids of active job_ads
-    archived_job_ads: list[int]
+    # active_job_ads: list[int]  # ids of active job_ads
+    # archived_job_ads: list[int]
 
-    # @classmethod
-    # def from_query_result(cls, id, user_name, password, role, first_name, last_name):
-    #     return cls(
-    #         id=id,
-    #         user_name=user_name,
-    #         password=password,
-    #         role=role,
-    #         registered_on=registered_on,
-    #         email=email)
+    @classmethod
+    def from_query_result(cls, id, user_name, password, company_name, description, logo_url, email, phone, address, 
+                            town_id, successful_matches):
+        return cls(
+            id=id,
+            user_name=user_name,
+            password=password,
+            company_name=company_name,
+            description=description,
+            logo_url=logo_url,
+            email=email,
+            phone=phone,
+            address=address,
+            town_id=town_id,
+            successful_matches=successful_matches)
 
 
 class CompanyRegisterData(BaseModel):
