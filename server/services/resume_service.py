@@ -33,5 +33,11 @@ def get_all_skills_resume_by_id(resume_id: int):
                 resumes_skills as r_s
                 ON s.id=r_s.skill_id
                     WHERE r_s.resume_id=?''', (resume_id,))
-    return (Skill(id=id,name=name, stars=stars)
+    return (Skill(id=id, name=name, stars=stars)
             for id, name, stars in data)
+
+
+def get_number_of_all_active_resumes_by_company():
+    data = read_query(
+        '''SELECT r.id FROM RESUMES
+        WHERE r.status=?''',(f'%{Status.ACTIVE}%',))
