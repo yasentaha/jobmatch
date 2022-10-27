@@ -20,7 +20,6 @@ def find_by_username(user_name: str, get_data_func = database.read_query) -> Use
 
     return next((User(id, user_name, password) for id, user_name, password in data), None)
 
-
 def try_login(user_name: str, password: str) -> User | None:
     user = find_by_username(user_name)
 
@@ -30,32 +29,31 @@ def try_login(user_name: str, password: str) -> User | None:
 
 
 
-def create_user(user_name: str, password: str, insert_data_func=database.insert_query) -> User | None:
+def create_user(user_name: str, 
+                password: str, 
+                role: str,
+                email:str, 
+                town_id:int,
+                address:str=None,
+                phone:str=None, 
+                insert_data_func=database.insert_query) -> User | None:
     
     password = _hash_password(password)
 
     try:
         generated_id = insert_data_func(
-            'INSERT INTO users(user_name, password, role) VALUES (?,?,?)',
-            (user_name, password, Role.REGULAR))
+            'INSERT INTO users(user_name, password, role, email, phone, address, town_id) VALUES (?,?,?,?,?,?,?)',
+            (user_name, password, role, email, phone, address, town_id))
+
 
         return User(id=generated_id, 
                     user_name=user_name, 
                     password='', 
-                    role=Role.REGULAR)
-
-    except IntegrityError:
-        return None
-
-
-def create_contact(email:str, address:str, town_id:int, phone:str=None, insert_data_func=database.insert_query) -> Contact | None:
-#AGAIN TRY EXCEPT BLOCK BECAUSE EMAIL NEEDS TO BE UNIQUE CHANGE THIS IN DB!!
-    try:
-        generated_id = insert_data_func(
-            'INSERT INTO contacts(email, phone, address, town_id) VALUES (?,?,?,?)',
-            (email, address, town_id, phone))
-
-        return Contact(generated_id, email, phone, address, town_id)
+                    role=role,
+                    email=email,
+                    phone=phone,
+                    address=address,
+                    town_id=town_id)
 
     except IntegrityError:
         return None
@@ -71,40 +69,32 @@ def get_town_id_by_name(town_name:str) -> int:
 def create_professional(user_id: int, 
                         first_name:str, 
                         last_name:str,
-                        contact_id, 
-                        summary:str=None, 
-                        image_url:str=None, 
-                        insert_data_func=database.insert_query) -> Professional | None:
+                        summary:str=None,  
+                        insert_data_func=database.insert_query) -> bool:
     
-    generated_id = insert_data_func(
+    professional_id = insert_data_func(
             '''INSERT INTO professionals
                             (user_id, 
                             first_name, 
                             last_name, 
-                            summary,
-                            image_url, contact_id) VALUES (?,?,?,?,?,?)''',
-            (user_id, first_name, last_name, summary, image_url, contact_id))
+                            summary) VALUES (?,?,?,?)''',
+            (user_id, first_name, last_name, summary))
 
-    if generated_id:
-        return Professional(user_id,first_name,last_name,summary,image_url)
+    return professional_id == user_id
 
 def create_company(user_id: int, 
                         company_name:str, 
                         description:str,
-                        contact_id, 
-                        logo_url:str=None, 
-                        insert_data_func=database.insert_query) -> Company | None:
+                        insert_data_func=database.insert_query) -> bool:
     
-    generated_id = insert_data_func(
-            '''INSERT INTO professionals
+    company_id = insert_data_func(
+            '''INSERT INTO companies
                             (user_id, 
                             company_name, 
-                            description, 
-                            logo_url, contact_id) VALUES (?,?,?,?,?)''',
-            (user_id, company_name, description, logo_url, contact_id))
+                            description) VALUES (?,?,?)''',
+            (user_id, company_name, description))
 
-    if generated_id:
-        return Company(user_id,company_name,description,logo_url)
+    return company_id == user_id
 
 
 def valid_username(user_name: str):
@@ -132,10 +122,16 @@ def get_user_by_id(id:int, get_data_func = database.read_query) -> User | None:
 def password_confirmation(password:str, confirm_password:str):
     return password == confirm_password
 
+def email_exists(email: str):
+    data = read_query('SELECT 1 from users where email = ?', (email,))
+
+    return any(data)
 
 #ATTENTION: 
+#HOW TO HAVE A TRANSACTIONAL BEHAVIOR WHEN REGISTERING
 '''
 LEFT TO DO:
-- ROUTERS REGISTER COMP, LOG IN, ADMIN???
+- PASSWORD REGEX??
+- ADMIN???
 - UNIT TESTS
 '''
