@@ -27,9 +27,8 @@ class ProfessionalInfo(BaseModel):
     id: int | None
     first_name: str
     last_name: str
-    summary: str
+    summary: str | None
     busy: bool
-    image_url: str
 
 
 class Professional(BaseModel):
@@ -38,12 +37,12 @@ class Professional(BaseModel):
     # password: str
     first_name: str
     last_name: str
-    summary: str
+    summary: str | None
     busy: bool
     # image_url: str
     email: str
-    phone: str
-    address: str
+    phone: str | None
+    address: str | None
     town_id: int
     active_resumes: int #number of active resumes
     # hidden_resumes: list[int]
@@ -100,10 +99,9 @@ class ProfessionalRegisterData(BaseModel):
     first_name: str
     last_name: str
     summary: str | None
-    image_url: str | None
     email: str
     phone: str | None
-    address: str
+    address: str | None
     town_name: str
 
 
@@ -129,10 +127,10 @@ class CompanyInfo(BaseModel):
 class Company(BaseModel):
     id: int | None
     user_name: str
-    password: str
+    # password: str
     company_name: str
     description: str
-    logo_url: str
+    # logo_url: str
     email: str
     phone: str
     address: str
