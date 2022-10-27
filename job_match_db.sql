@@ -26,13 +26,8 @@ CREATE TABLE `companies` (
   `user_id` int(11) NOT NULL,
   `company_name` varchar(100) NOT NULL,
   `description` varchar(10000) NOT NULL,
-  `logo_url` varchar(1000) DEFAULT NULL,
-  `contact_id` int(11) NOT NULL,
-  `sucessful_matches` int(11) DEFAULT 0,
   PRIMARY KEY (`user_id`),
-  KEY `fk_companies_contacts1_idx` (`contact_id`),
-  KEY `fk_companies_users1_idx` (`user_id`),
-  CONSTRAINT `fk_companies_contacts1` FOREIGN KEY (`contact_id`) REFERENCES `contacts` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  KEY `fk_companies_users1_idx1` (`user_id`),
   CONSTRAINT `fk_companies_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -44,35 +39,6 @@ CREATE TABLE `companies` (
 LOCK TABLES `companies` WRITE;
 /*!40000 ALTER TABLE `companies` DISABLE KEYS */;
 /*!40000 ALTER TABLE `companies` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `contacts`
---
-
-DROP TABLE IF EXISTS `contacts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
- SET character_set_client = utf8mb4 ;
-CREATE TABLE `contacts` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `email` varchar(100) NOT NULL,
-  `phone` varchar(100) DEFAULT NULL,
-  `address` varchar(1000) NOT NULL,
-  `town_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `email_UNIQUE` (`email`),
-  KEY `fk_contacts_towns1_idx` (`town_id`),
-  CONSTRAINT `fk_contacts_towns1` FOREIGN KEY (`town_id`) REFERENCES `towns` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `contacts`
---
-
-LOCK TABLES `contacts` WRITE;
-/*!40000 ALTER TABLE `contacts` DISABLE KEYS */;
-/*!40000 ALTER TABLE `contacts` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -94,9 +60,9 @@ CREATE TABLE `job_ads` (
   `company_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_job_ads_towns1_idx` (`town_id`),
-  KEY `fk_job_ads_companies1_idx` (`company_id`),
-  CONSTRAINT `fk_job_ads_companies1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_job_ads_towns1` FOREIGN KEY (`town_id`) REFERENCES `towns` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  KEY `fk_job_ads_users1_idx` (`company_id`),
+  CONSTRAINT `fk_job_ads_towns1` FOREIGN KEY (`town_id`) REFERENCES `towns` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_job_ads_users1` FOREIGN KEY (`company_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -180,12 +146,8 @@ CREATE TABLE `professionals` (
   `last_name` varchar(100) NOT NULL,
   `summary` varchar(10000) DEFAULT NULL,
   `busy` tinyint(2) DEFAULT 0,
-  `image_url` varchar(1000) DEFAULT NULL,
-  `contact_id` int(11) NOT NULL,
   PRIMARY KEY (`user_id`),
-  KEY `fk_professionals_contacts1_idx` (`contact_id`),
-  KEY `fk_professionals_users1_idx` (`user_id`),
-  CONSTRAINT `fk_professionals_contacts1` FOREIGN KEY (`contact_id`) REFERENCES `contacts` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  KEY `fk_professionals_users1_idx1` (`user_id`),
   CONSTRAINT `fk_professionals_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -213,15 +175,15 @@ CREATE TABLE `resumes` (
   `min_salary` int(11) NOT NULL,
   `max_salary` int(11) NOT NULL,
   `work_place` varchar(50) NOT NULL,
+  `main` tinyint(2) DEFAULT 0,
   `status` varchar(50) DEFAULT 'hidden',
   `town_id` int(11) NOT NULL,
-  `main` tinyint(2) DEFAULT 0,
   `professional_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_resumes_towns1_idx` (`town_id`),
-  KEY `fk_resumes_professionals1_idx` (`professional_id`),
-  CONSTRAINT `fk_resumes_professionals1` FOREIGN KEY (`professional_id`) REFERENCES `professionals` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_resumes_towns1` FOREIGN KEY (`town_id`) REFERENCES `towns` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  KEY `fk_resumes_users1_idx` (`professional_id`),
+  CONSTRAINT `fk_resumes_towns1` FOREIGN KEY (`town_id`) REFERENCES `towns` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_resumes_users1` FOREIGN KEY (`professional_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -296,7 +258,7 @@ CREATE TABLE `towns` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -305,7 +267,7 @@ CREATE TABLE `towns` (
 
 LOCK TABLES `towns` WRITE;
 /*!40000 ALTER TABLE `towns` DISABLE KEYS */;
-INSERT INTO `towns` VALUES (1,'Sofia'),(2,'Plovdiv'),(3,'Ruse'),(4,'Varna'),(5,'Burgas'),(6,'Vidin'),(7,'Montana'),(8,'Pernik'),(9,'Kiustendil'),(10,'Blagoevgrad'),(11,'Vratsa'),(12,'Pazardzhik'),(13,'Smolian'),(14,'Pleven'),(15,'Lovech'),(16,'Veliko Tarnovo'),(17,'Gabrovo'),(18,'Stara Zagora'),(19,'Haskovo'),(20,'Kardzhali'),(21,'Targovishte'),(22,'Sliven'),(23,'Yambol'),(24,'Silistra'),(25,'Razgrad'),(26,'Shumen'),(27,'Dobrich');
+INSERT INTO `towns` VALUES (28,'Sofia'),(29,'Plovdiv'),(30,'Ruse'),(31,'Varna'),(32,'Burgas'),(33,'Vidin'),(34,'Montana'),(35,'Pernik'),(36,'Kiustendil'),(37,'Blagoevgrad'),(38,'Vratsa'),(39,'Pazardzhik'),(40,'Smolian'),(41,'Pleven'),(42,'Lovech'),(43,'Veliko Tarnovo'),(44,'Gabrovo'),(45,'Stara Zagora'),(46,'Haskovo'),(47,'Kardzhali'),(48,'Targovishte'),(49,'Sliven'),(50,'Yambol'),(51,'Silistra'),(52,'Razgrad'),(53,'Shumen'),(54,'Dobrich');
 /*!40000 ALTER TABLE `towns` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -321,8 +283,15 @@ CREATE TABLE `users` (
   `user_name` varchar(50) NOT NULL,
   `password` varchar(1000) NOT NULL,
   `role` varchar(50) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `phone` varchar(100) DEFAULT NULL,
+  `address` varchar(500) DEFAULT NULL,
+  `town_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `user_name_UNIQUE` (`user_name`)
+  UNIQUE KEY `user_name_UNIQUE` (`user_name`),
+  UNIQUE KEY `email_UNIQUE` (`email`),
+  KEY `fk_users_towns1_idx` (`town_id`),
+  CONSTRAINT `fk_users_towns1` FOREIGN KEY (`town_id`) REFERENCES `towns` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -344,4 +313,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-10-26 17:23:21
+-- Dump completed on 2022-10-27 16:30:41
