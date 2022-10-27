@@ -57,10 +57,8 @@ def get_number_of_all_active_job_ads_by_company_id(company_id: int):
         '''SELECT j.id
                 FROM job_ads as j
                     WHERE j.company_id=? AND j.status=?''', (company_id, f'%{Status.ACTIVE}%'))
-    if data:
-        return len(data)
-    else:
-        return [0]
+    
+    return len(data)
 
 
 def update_successful_matches(id: int):
