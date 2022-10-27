@@ -35,18 +35,17 @@ class ProfessionalInfo(BaseModel):
 class Professional(BaseModel):
     id: int | None
     user_name: str
-    password: str
+    # password: str
     first_name: str
     last_name: str
     summary: str
     busy: bool
-    image_url: str
+    # image_url: str
     email: str
     phone: str
     address: str
     town_id: int
-
-    # active_resumes: list[int] #ids of active resumes
+    active_resumes: int #number of active resumes
     # hidden_resumes: list[int]
 
     @classmethod
@@ -69,8 +68,9 @@ class Professional(BaseModel):
 
 
 class Role:
-    REGULAR = 'regular'
     ADMIN = 'admin'
+    PROFESSIONAL = 'professional'
+    COMPANY = 'company'
 
 
 class Skill(BaseModel):
@@ -250,14 +250,3 @@ class ProfessionalResponse(BaseModel):
             phone=phone,
             address=address,
             town_name=town_name)
-
-class CompanyResponse(BaseModel):
-    id: int
-    user_name: str
-    company_name: str
-    description: str
-    logo_url: str | None
-    email: str
-    phone: str | None
-    address: str
-    town_name: str
