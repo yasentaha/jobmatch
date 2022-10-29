@@ -122,26 +122,23 @@ class CompanyInfo(BaseModel):
     id: int | None
     company_name: str
     description: str
-    logo_url: str
 
 class Company(BaseModel):
     id: int | None
     user_name: str
-    # password: str
     company_name: str
     description: str
-    # logo_url: str
     email: str
     phone: str
     address: str
     town_id: int
     successful_matches: int
+    active_job_ads: int
 
-    # active_job_ads: list[int]  # ids of active job_ads
     # archived_job_ads: list[int]
 
     @classmethod
-    def from_query_result(cls, id, user_name, password, company_name, description, logo_url, email, phone, address, 
+    def from_query_result(cls, id, user_name, password, company_name, description, email, phone, address, 
                             town_id, successful_matches):
         return cls(
             id=id,
@@ -149,7 +146,6 @@ class Company(BaseModel):
             password=password,
             company_name=company_name,
             description=description,
-            logo_url=logo_url,
             email=email,
             phone=phone,
             address=address,
@@ -163,7 +159,6 @@ class CompanyRegisterData(BaseModel):
     confirm_password: str
     company_name: str
     description: str
-    logo_url: str | None
     email: str
     phone: str | None
     address: str
@@ -181,6 +176,19 @@ class JobAd(BaseModel):
     town_name: str  # if town_name not in towns, catch error
     requirements: list[Skill]
     match_request_ids: list[int]
+
+    @classmethod
+    def from_query_result(cls, id, title, description, min_salary, max_salary, work_place, status, town_name):
+        return cls(
+            id=id,
+            title=title,
+            description=description,
+            min_salary=min_salary,
+            max_salary=max_salary,
+            work_place=work_place,
+            status=status,
+            town_name=town_name
+            )
 
 
 class MatchRequestResponse(BaseModel):
