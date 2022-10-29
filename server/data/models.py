@@ -35,16 +35,16 @@ class Professional(BaseModel):
     id: int | None
     user_name: str
     # password: str
+    email: str
+    phone: str | None
+    address: str | None
+    town_id: int
     first_name: str
     last_name: str
     summary: str | None
     busy: bool
     # image_url: str
-    email: str
-    phone: str | None
-    address: str | None
-    town_id: int
-    active_resumes: int #number of active resumes
+    # active_resumes: int #number of active resumes
     # hidden_resumes: list[int]
 
     @classmethod
@@ -236,14 +236,13 @@ class ProfessionalResponse(BaseModel):
     first_name: str
     last_name: str
     summary: str | None
-    image_url: str | None
     email: str
     phone: str | None
     address: str
     town_name: str
 
     @classmethod
-    def from_query_result(cls, id, user_name, first_name, last_name, summary, image_url, email,
+    def from_query_result(cls, id, user_name, first_name, last_name, summary, email,
                           phone, address, town_name):
         return cls(
             id=id,
@@ -251,7 +250,6 @@ class ProfessionalResponse(BaseModel):
             first_name=first_name,
             last_name=last_name,
             summary=summary,
-            image_url=image_url,
             email=email,
             phone=phone,
             address=address,
