@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.13, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: job_match_db
+-- Host: 127.0.0.1    Database: jobmatch
 -- ------------------------------------------------------
 -- Server version	5.5.5-10.9.2-MariaDB
 
@@ -26,6 +26,7 @@ CREATE TABLE `companies` (
   `user_id` int(11) NOT NULL,
   `company_name` varchar(100) NOT NULL,
   `description` varchar(10000) NOT NULL,
+  `successful_matches` int(11) DEFAULT 0,
   PRIMARY KEY (`user_id`),
   KEY `fk_companies_users1_idx1` (`user_id`),
   CONSTRAINT `fk_companies_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
@@ -58,6 +59,7 @@ CREATE TABLE `job_ads` (
   `status` varchar(50) DEFAULT 'active',
   `town_id` int(11) NOT NULL,
   `company_id` int(11) NOT NULL,
+  `views` int(11) DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `fk_job_ads_towns1_idx` (`town_id`),
   KEY `fk_job_ads_users1_idx` (`company_id`),
@@ -313,4 +315,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-10-27 16:30:41
+-- Dump completed on 2022-10-29 14:46:05
