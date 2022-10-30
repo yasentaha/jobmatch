@@ -35,7 +35,8 @@ def edit_resume_by_id(professional_id: int, resume_id: int, title: str, descript
         '''UPDATE resumes
             SET title=?, description=?, min_salary=?, max_salary=?,work_place=?,status=?,town_id=?,main=?
              WHERE professional_id = ? AND resumes.id=?''',
-        (title, description, min_salary, max_salary, work_place, status, town_id, main))
+        (title, description, min_salary, max_salary, work_place,
+         status, town_id, main, professional_id, resume_id))
 
     return (Resume(id=resume_id, title=title, description=description, min_salary=min_salary,
                    max_salary=max_salary, work_place=work_place, status=status, town_id=town_id, main=main))
