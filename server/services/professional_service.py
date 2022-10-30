@@ -50,15 +50,17 @@ def get_professional_info_by_id(id: int):
                               busy=busy)
             for user_id, first_name,last_name,summary, busy in data)
 
-def edit_professional_info(professional_info: ProfessionalInfo, first_name: str, last_name: str,
-                           summary: str | None, busy: int, update_data=None):
+def edit_professional_info(id:int,professional_info: ProfessionalInfo,update_data=None):
     if update_data is None:
         update_data = update_query
 
     update_data(
         '''UPDATE professionals
             SET first_name = ? ,last_name=?,summary=?,busy=?
-             WHERE user_id = ?''', (first_name, last_name,summary,busy,professional_info.id))
+             WHERE user_id = ?''', (professional_info.first_name, professional_info.last_name,
+                                    professional_info.summary,professional_info.busy,
+                                    id))
 
-    return (ProfessionalInfo(user_id=professional_info.id,first_name=first_name,last_name=last_name,
-                             summary=summary,busy=busy))
+    return (ProfessionalInfo(user_id=professional_info.id,first_name=professional_info.first_name,
+                             last_name=professional_info.last_name,
+                             summary=professional_info.summary,busy=professional_info.busy))
