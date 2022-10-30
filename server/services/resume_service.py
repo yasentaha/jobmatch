@@ -83,3 +83,7 @@ def get_number_of_all_active_resumes_by_company(professional_id: int):
         WHERE r.professional_id=? AND r.status=?''', (professional_id, f'%{Status.ACTIVE}%',))
 
     return len(data)
+
+
+def get_list_of_matches():
+    return None
