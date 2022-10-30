@@ -64,3 +64,13 @@ def edit_professional_info(id:int,professional_info: ProfessionalInfo,update_dat
     return (ProfessionalInfo(user_id=professional_info.id,first_name=professional_info.first_name,
                              last_name=professional_info.last_name,
                              summary=professional_info.summary,busy=professional_info.busy))
+
+
+def sort(professionals: list[Professional], *, attribute='name', reverse=False):
+
+    if attribute == 'name':
+        def sort_fn(p: Professional): return p.first_name
+    else:
+        def sort_fn(p: Professional): return p.id
+
+    return sorted(professionals, key=sort_fn, reverse=reverse)
