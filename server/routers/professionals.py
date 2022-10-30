@@ -2,8 +2,8 @@ from fastapi import APIRouter, Header
 from pydantic import BaseModel
 
 from server.common.auth import get_user_or_raise_401
-from server.common.responses import NotFound
-from server.data.models import Professional, Resume
+from server.common.responses import NotFound, Forbidden
+from server.data.models import Professional, Resume, ProfessionalInfo
 from server.services import professional_service, resume_service
 
 
@@ -19,6 +19,7 @@ class PersonalProfessionalResponseModel(BaseModel):
 
 
 professionals_router = APIRouter(prefix='/professionals')
+
 
 @professionals_router.get('/{id}')
 def get_professional_by_id(id: int, x_token: str = Header()):
@@ -41,3 +42,16 @@ def get_professional_by_id(id: int, x_token: str = Header()):
             professional=professional,
             list_of_matches=resume_service.get_list_of_matches()
         )
+
+
+@professionals_router.put('/{id}')
+def edit_professional_info_by_id(id: int, professional_info: ProfessionalInfo, first_name: str, last_name: str,
+                                summary: str | None, busy: int, x_token: str = Header()):
+    user = get_user_or_raise_401(x_token)
+
+    if not user.role=='professional':
+        return Forbidden('You do not have permission to change Professional info!')
+
+    professional_info=edit_professional_info_by_id(professional_info,first_name,last_name,summary,busy)
+
+    return professional_info
