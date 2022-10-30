@@ -2,8 +2,18 @@ from server.data.database import read_query, update_query, insert_query, read_qu
 from server.data.models import Company, JobAd, Status, Skill
 
 
+def create(job_ad: JobAd, company: Company) -> JobAd:
+    generated_id = insert_query(
+        '''INSERT INTO job_ads(title, description, min_salary, max_salary, work_place, status, town_id, company_id, views) VALUES(?,?,?,?,?,?,?,?,?)''',
+        (job_ad.title, job_ad.description, job_ad.min_salary, job_ad.max_salary, job_ad.work_place, job_ad.status, job_ad.town_name, company.id, 0)
+    )
+    job_ad.id = generated_id
 
-def get_job_ad_by_id(id: int):
+    new_job_ad= get_job_ad_by_id(company.id,generated_id)
+
+    return new_job_ad
+
+def get_job_ad_by_id(company_id:int, job_id: int):
     
     data = read_query(
         '''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, j.work_place, j.status, j.views, t.name
@@ -11,7 +21,7 @@ def get_job_ad_by_id(id: int):
             job_ads AS j
         LEFT JOIN
             towns AS t ON j.town_id=t.id
-        WHERE j.id=?''', (id,))
+        WHERE company_id=? AND j.id=?''', (company_id, job_id))
 
     return next((JobAd.from_query_result(*row) for row in data), None)
 
