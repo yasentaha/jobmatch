@@ -2,7 +2,7 @@ from fastapi import APIRouter, Header
 from pydantic import BaseModel
 
 from server.common.auth import get_user_or_raise_401
-from server.common.responses import NotFound, Forbidden
+from server.common.responses import NotFound, Forbidden, Unauthorized
 from server.data.models import Professional, Resume, ProfessionalInfo
 from server.services import professional_service, resume_service
 from server.services.professional_service import edit_professional_info, get_professional_info_by_id
@@ -65,7 +65,7 @@ def edit_professional_info_by_id(id: int, professional_info: ProfessionalInfo, x
     user = get_user_or_raise_401(x_token)
 
     if not user.id == id or not user.is_admin():
-        return Forbidden('You do not have permission to change Professional info!')
+        return Unauthorized('You do not have permission to change Professional info!')
 
     edited_professional_info = edit_professional_info(id, professional_info)
 

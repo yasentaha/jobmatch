@@ -18,7 +18,7 @@ def all_hidden_resumes(id: int):
     data = read_query(
                 '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, r.work_place, r.status, r.town_id,r.main 
                         FROM resumes as r
-                        WHERE r.professional_id=? AND r.status=?''', (id, f'%{Status.ACTIVE}%'))
+                        WHERE r.professional_id=? AND r.status=?''', (id, f'%{Status.HIDDEN}%'))
 
     return (Resume(id=id, title=title, description=description, min_salary=min_salary, max_salary=max_salary,
             work_place=work_place, status=status, town_id=town_id, main=main)
@@ -100,7 +100,7 @@ def get_all_skills_resume_by_id(resume_id: int):
             for id, name, stars in data)
 
 
-def get_number_of_all_active_resumes_by_company(professional_id: int):
+def get_number_of_all_active_resumes(professional_id: int):
     data = read_query(
         '''SELECT r.id FROM RESUMES
         WHERE r.professional_id=? AND r.status=?''', (professional_id, f'%{Status.ACTIVE}%',))

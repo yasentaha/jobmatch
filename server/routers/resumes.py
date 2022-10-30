@@ -2,7 +2,7 @@ from fastapi import APIRouter, Header
 from pydantic import BaseModel
 
 from server.common.auth import get_user_or_raise_401
-from server.common.responses import Forbidden
+from server.common.responses import Forbidden, Unauthorized
 from server.data.models import Resume, Skill
 from server.routers import professionals
 from server.services import resume_service
@@ -12,6 +12,10 @@ class ResumeResponseModel(BaseModel):
     resume: Resume
     skills: list[Skill]
     match_request_ids: list[int]
+class ResumeWithSkillsResponseModel(BaseModel):
+    resume: Resume
+    skills: list[Skill]
+
 
 
 resumes_router = APIRouter(prefix='/resumes')
@@ -35,6 +39,6 @@ def get_resumes(id: int, x_token=Header()):
     if user.id == id or user.is_admin():
         resumes = resume_service.all_hidden_resumes(id)
     else:
-        return Forbidden('Access denied, you do not have permission to access on this server!')
+        return Unauthorized('Access denied, you do not have permission to access on this server!')
 
     return resumes
