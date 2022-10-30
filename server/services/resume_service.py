@@ -1,5 +1,19 @@
-from server.data.database import read_query
+from server.data.database import read_query, insert_query
 from server.data.models import Resume, Status, Skill
+
+
+def create(resume: Resume, insert_data=None):
+    if insert_data is None:
+        insert_data = insert_query
+
+    generated_id = insert_data(
+        'insert into resumes(title, description, min_salary, max_salary, work_place, status, town_id,main) values(?,?,?,?,?,?,?)',
+        (resume.title, resume.description, resume.min_salary, resume.max_salary, resume.work_place, resume.status,
+         resume.town_id, resume.main))
+
+    resume.id = generated_id
+
+    return resume
 
 
 def get_all_active_resumes_by_professional_id(professional_id: int):
@@ -37,9 +51,9 @@ def get_all_skills_resume_by_id(resume_id: int):
             for id, name, stars in data)
 
 
-def get_number_of_all_active_resumes_by_company(professional_id:int):
+def get_number_of_all_active_resumes_by_company(professional_id: int):
     data = read_query(
         '''SELECT r.id FROM RESUMES
-        WHERE r.professional_id=? AND r.status=?''',(professional_id, f'%{Status.ACTIVE}%',))
+        WHERE r.professional_id=? AND r.status=?''', (professional_id, f'%{Status.ACTIVE}%',))
 
     return len(data)
