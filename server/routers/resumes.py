@@ -35,6 +35,6 @@ def get_resumes(id: int, x_token=Header()):
     if user.id == id or user.is_admin():
         resumes = resume_service.all_hidden_resumes(id)
     else:
-        return Forbidden('You do not have permission to this page!')
+        return Forbidden('Access denied, you do not have permission to access on this server!')
 
     return resumes
