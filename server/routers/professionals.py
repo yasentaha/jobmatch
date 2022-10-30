@@ -5,6 +5,7 @@ from server.common.auth import get_user_or_raise_401
 from server.common.responses import NotFound, Forbidden
 from server.data.models import Professional, Resume, ProfessionalInfo
 from server.services import professional_service, resume_service
+from server.services.professional_service import edit_professional_info, get_professional_info_by_id
 
 
 class ProfessionalResponseModel(BaseModel):
@@ -45,13 +46,19 @@ def get_professional_by_id(id: int, x_token: str = Header()):
 
 
 @professionals_router.put('/{id}')
-def edit_professional_info_by_id(id: int, professional_info: ProfessionalInfo, first_name: str, last_name: str,
+def edit_professional_info_by_id(id: int, first_name: str, last_name: str,
                                 summary: str | None, busy: int, x_token: str = Header()):
+
     user = get_user_or_raise_401(x_token)
 
     if not user.role=='professional':
         return Forbidden('You do not have permission to change Professional info!')
 
-    professional_info=edit_professional_info_by_id(professional_info,first_name,last_name,summary,busy)
+    professional_info=get_professional_info_by_id(id)
 
-    return professional_info
+    if not professional_info:
+        return Forbidden(f'Professional with {id} not exist!')
+
+    edited_professional_info=edit_professional_info(professional_info,first_name,last_name,summary,busy)
+
+    return edited_professional_info
