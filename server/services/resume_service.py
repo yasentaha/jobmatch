@@ -16,6 +16,17 @@ def create(resume: Resume, insert_data=None):
     return resume
 
 
+def get_resume_by_id(professional_id: int, resume_id: int):
+    data = read_query(
+        '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, r.work_place, r.status, r.town_id,r.main 
+                    FROM resumes as r
+                    WHERE r.professional_id=? AND r.id=?''', (professional_id, resume_id))
+
+    return (Resume(id=id, title=title, description=description, min_salary=min_salary, max_salary=max_salary,
+                   work_place=work_place, status=status, town_id=town_id, main=main)
+            for id, title, description, min_salary, max_salary, work_place, status, town_id, main in data)
+
+
 def get_all_active_resumes_by_professional_id(professional_id: int):
     data = read_query(
         '''SELECT r.id
