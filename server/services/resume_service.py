@@ -49,20 +49,20 @@ def get_resume_by_id(professional_id: int, resume_id: int):
             for id, title, description, min_salary, max_salary, work_place, status, town_id, main in data)
 
 
-def edit_resume_by_id(professional_id: int, resume_id: int, title: str, description: str, min_salary: int,
-                      max_salary: int, work_place: int, status: str, town_id: int, main: int, update_data=None):
-    if update_data is None:
-        update_data = update_query
-
-    update_data(
-        '''UPDATE resumes
-            SET title=?, description=?, min_salary=?, max_salary=?,work_place=?,status=?,town_id=?,main=?
-             WHERE professional_id = ? AND resumes.id=?''',
-        (title, description, min_salary, max_salary, work_place,
-         status, town_id, main, professional_id, resume_id))
-
-    return (Resume(id=resume_id, title=title, description=description, min_salary=min_salary,
-                   max_salary=max_salary, work_place=work_place, status=status, town_id=town_id, main=main))
+# def edit_resume_by_id(professional_id: int, resume_id: int, title: str, description: str, min_salary: int,
+#                       max_salary: int, work_place: int, status: str, town_id: int, main: int, update_data=None):
+#     if update_data is None:
+#         update_data = update_query
+#
+#     update_data(
+#         '''UPDATE resumes
+#             SET title=?, description=?, min_salary=?, max_salary=?,work_place=?,status=?,town_id=?,main=?
+#              WHERE professional_id = ? AND resumes.id=?''',
+#         (title, description, min_salary, max_salary, work_place,
+#          status, town_id, main, professional_id, resume_id))
+#
+#     return (Resume(id=resume_id, title=title, description=description, min_salary=min_salary,
+#                    max_salary=max_salary, work_place=work_place, status=status, town_id=town_id, main=main))
 
 
 def get_all_active_resumes_by_professional_id(professional_id: int):
