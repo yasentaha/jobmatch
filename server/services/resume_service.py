@@ -2,6 +2,19 @@ from server.data.database import read_query, insert_query, update_query
 from server.data.models import Resume, Status, Skill
 
 
+def all_active_resumes_without_job_salary_and_description(id: int):
+
+    data = read_query(
+                '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, r.work_place, r.status, r.town_id,r.main 
+                        FROM resumes as r
+                        WHERE r.professional_id=? AND r.status=?''', (id, f'%{Status.ACTIVE}%'))
+
+
+
+    return (Resume(id=id, title=title, description='None', min_salary=0, max_salary=0,
+            work_place=work_place, status=status, town_id=town_id, main=main)
+    for id, title, description, min_salary, max_salary, work_place, status, town_id, main in data)
+
 def create(resume: Resume, insert_data=None):
     if insert_data is None:
         insert_data = insert_query
@@ -25,6 +38,7 @@ def get_resume_by_id(professional_id: int, resume_id: int):
     return (Resume(id=id, title=title, description=description, min_salary=min_salary, max_salary=max_salary,
                    work_place=work_place, status=status, town_id=town_id, main=main)
             for id, title, description, min_salary, max_salary, work_place, status, town_id, main in data)
+
 
 def edit_resume_by_id(professional_id: int, resume_id: int, title: str, description: str, min_salary: int,
                       max_salary: int, work_place: int, status: str, town_id: int, main: int, update_data=None):
@@ -85,5 +99,9 @@ def get_number_of_all_active_resumes_by_company(professional_id: int):
     return len(data)
 
 
-def get_list_of_matches(id:int):
+def get_list_of_matches(id: int):
+    return None
+
+
+def sort(professionals, reverse):
     return None
