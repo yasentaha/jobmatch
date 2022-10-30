@@ -40,6 +40,15 @@ def get_professional_by_id(id: int):
 
     return (Professional.from_query_result(*row) for row in data)
 
+def get_professional_info_by_id(id: int):
+    data = read_query(
+        '''SELECT p.user_id, p.first_name, p.last_name, p.summary, p.busy
+                FROM professionals as p
+            WHERE p.id=?''', (id,))
+
+    return (ProfessionalInfo(id=user_id,first_name=first_name,last_name=last_name, summary=summary,
+                              busy=busy)
+            for user_id, first_name,last_name,summary, busy in data)
 
 def edit_professional_info(professional_info: ProfessionalInfo, first_name: str, last_name: str,
                            summary: str | None, busy: int, update_data=None):
