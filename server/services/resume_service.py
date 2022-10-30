@@ -85,5 +85,5 @@ def get_number_of_all_active_resumes_by_company(professional_id: int):
     return len(data)
 
 
-def get_list_of_matches():
+def get_list_of_matches(id:int):
     return None
