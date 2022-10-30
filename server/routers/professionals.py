@@ -21,6 +21,20 @@ class PersonalProfessionalResponseModel(BaseModel):
 
 professionals_router = APIRouter(prefix='/professionals')
 
+@professionals_router.get('/')
+def get_professionals(sort: str | None = None, x_token=Header()):
+
+    user = get_user_or_raise_401(x_token)
+
+    if user:
+        professionals = professional_service.all()
+    else:
+        return Forbidden('Please log in!')
+
+    if sort and (sort == 'asc' or sort == 'desc'):
+        return professional_service.sort(professionals, reverse=sort == 'desc')
+    else:
+        return professionals
 
 @professionals_router.get('/{id}')
 def get_professional_by_id(id: int, x_token: str = Header()):
@@ -41,7 +55,7 @@ def get_professional_by_id(id: int, x_token: str = Header()):
     else:
         return ProfessionalResponseModel(
             professional=professional,
-            list_of_matches=resume_service.get_list_of_matches()
+            list_of_matches=resume_service.get_list_of_matches(id)
         )
 
 
