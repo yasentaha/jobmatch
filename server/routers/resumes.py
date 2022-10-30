@@ -1,6 +1,11 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from pydantic import BaseModel
+
+from server.common.auth import get_user_or_raise_401
+from server.common.responses import Forbidden
 from server.data.models import Resume, Skill
+from server.routers import professionals
+from server.services import resume_service
 
 
 class ResumeResponseModel(BaseModel):
@@ -10,3 +15,14 @@ class ResumeResponseModel(BaseModel):
 
 
 resumes_router = APIRouter(prefix='/resumes')
+
+@resumes_router.get('/{id}/resumes')
+def get_resumes(id: int, x_token=Header()):
+    user = get_user_or_raise_401(x_token)
+
+    if user:
+        resumes = resume_service.all_active_resumes_without_job_salary_and_description(id)
+    else:
+        return Forbidden('Please log in!')
+
+    return resumes
