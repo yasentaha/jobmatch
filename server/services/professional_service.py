@@ -1,5 +1,5 @@
-from server.data.database import read_query, insert_query
-from server.data.models import Professional, Resume, Status
+from server.data.database import read_query, insert_query, update_query
+from server.data.models import Professional, Resume, Status, ProfessionalInfo
 
 
 def all(search: str = None):
@@ -40,3 +40,16 @@ def get_by_id(id: int):
 
     return (Professional.from_query_result(*row) for row in data)
 
+
+def edit_professional_info(professional_info: ProfessionalInfo, first_name: str, last_name: str,
+                           summary: str | None, busy: int, update_data=None):
+    if update_data is None:
+        update_data = update_query
+
+    update_data(
+        '''UPDATE professionals
+            SET first_name = ? ,last_name=?,summary=?,busy=?
+             WHERE user_id = ?''', (first_name, last_name,summary,busy,professional_info.id))
+
+    return (ProfessionalInfo(user_id=professional_info.id,first_name=first_name,last_name=last_name,
+                             summary=summary,busy=busy))
