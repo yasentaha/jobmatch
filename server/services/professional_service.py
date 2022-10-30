@@ -27,7 +27,7 @@ def all(search: str = None):
     return (Professional.from_query_result(*row) for row in data)
 
 
-def get_by_id(id: int):
+def get_professional_by_id(id: int):
     data = read_query(
         '''SELECT u.id, u.user_name,u.email,u.phone,u.address,t.id,
             p.first_name,p.last_name,p.summary,p.busy
