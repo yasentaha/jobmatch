@@ -43,7 +43,7 @@ def create_resume_and_add_skill(professional_id: int, create_resume: CreateResum
 
     skill: Skill
 
-    skill = read_query(
+    skill = read_query_single_element(
         '''SELECT s.id, s.name FROM skills as s 
         WHERE s.name=?''', (create_resume.skill_name))
 
@@ -69,7 +69,7 @@ def get_resume_by_id(professional_id: int, resume_id: int):
                   town_id=data.town_id, main=data.main)
 
 
-def edit_resume_by_professional_idand_resume_id(professional_id: int, resume_id: int, resume: Resume, update_data=None):
+def edit_resume_by_professional_id_and_resume_id(professional_id: int, resume_id: int, resume: Resume, update_data=None):
     if update_data is None:
         update_data = update_query
 
