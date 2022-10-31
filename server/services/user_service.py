@@ -15,10 +15,10 @@ def _hash_password(password: str):
 
 def find_by_username(user_name: str, get_data_func = database.read_query) -> User | None:
     data = get_data_func(
-        'SELECT id, user_name, password FROM users WHERE user_name = ?',
+        'SELECT id, user_name, password, role FROM users WHERE user_name = ?',
         (user_name,))
 
-    return next((User(id, user_name, password) for id, user_name, password in data), None)
+    return next((User.from_query_result(*row) for row in data), None)
 
 def try_login(user_name: str, password: str) -> User | None:
     user = find_by_username(user_name)
@@ -59,10 +59,10 @@ def create_user(user_name: str,
         return None
 
 
-def get_town_id_by_name(town_name:str) -> int:
-    town_id = (read_query_single_element('SELECT id from towns where name = ?', (town_name,)))[0]
+def get_town_id_by_name(town_name:str, read_data_func=database.read_query_single_element) -> int:
+    town_id = (read_data_func('SELECT id from towns where name = ?', (town_name,)))
 
-    return town_id
+    return town_id[0] if town_id else None
 
 
 #WE WILL USE THE ABOVE USER AND CONTACT IDS INTO THIS:
@@ -70,7 +70,7 @@ def create_professional(user_id: int,
                         first_name:str, 
                         last_name:str,
                         summary:str=None,  
-                        insert_data_func=database.insert_query) -> bool:
+                        insert_data_func=database.insert_query) -> None:
     
     professional_id = insert_data_func(
             '''INSERT INTO professionals
@@ -80,12 +80,10 @@ def create_professional(user_id: int,
                             summary) VALUES (?,?,?,?)''',
             (user_id, first_name, last_name, summary))
 
-    return professional_id == user_id
-
 def create_company(user_id: int, 
                         company_name:str, 
                         description:str,
-                        insert_data_func=database.insert_query) -> bool:
+                        insert_data_func=database.insert_query) -> None:
     
     company_id = insert_data_func(
             '''INSERT INTO companies
@@ -93,8 +91,6 @@ def create_company(user_id: int,
                             company_name, 
                             description) VALUES (?,?,?)''',
             (user_id, company_name, description))
-
-    return company_id == user_id
 
 
 def valid_username(user_name: str):

@@ -11,7 +11,7 @@ def get_company_by_id(id: int):
         FROM 
             users as u
         LEFT JOIN
-            companies AS c ON c.users_id=u.id
+            companies AS c ON c.user_id=u.id
         LEFT JOIN
             towns AS t ON u.town_id=t.id
         WHERE u.id=?''', (id,))

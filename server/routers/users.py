@@ -3,7 +3,7 @@ from server.common.auth import get_user_or_raise_401, create_token
 from server.common.responses import BadRequest, Forbidden, NotFound, Success
 from server.data.models import LoginData, User, Contact, Company, Professional, CompanyInfo, ProfessionalInfo, CompanyRegisterData, ProfessionalRegisterData
 from server.data.models import ProfessionalResponse
-from server.services import user_service
+from server.services import user_service, professional_service, company_service
 
 
 users_router = APIRouter(prefix='/users')
@@ -28,9 +28,11 @@ def register_professional(data: ProfessionalRegisterData):
     if not user:
         return BadRequest(f'Username {data.user_name} is taken.')
 
-    professional_created = user_service.create_professional(user.id, data.first_name, data.last_name, data.summary)
+    user_service.create_professional(user.id, data.first_name, data.last_name, data.summary)
 
-    if professional_created:
+    professional = professional_service.get_professional_by_id(user.id)
+
+    if professional and professional.email == data.email:
 
         return Success(f'Professional account created for {data.first_name} {data.last_name}. Please log in to continue.')
     #else think if the above may not be successful, if yes, delete the row in users (rollback)
@@ -55,10 +57,11 @@ def register_company(data: CompanyRegisterData):
     if not user:
         return BadRequest(f'Username {data.user_name} is taken.')
     
-    company_created = user_service.create_company(user.id, data.company_name, data.description)
+    user_service.create_company(user.id, data.company_name, data.description)
 
-    if company_created:
+    company = company_service.get_company_by_id(user.id)
 
+    if company and company.email == data.email:
         return Success(f'Company account created for {data.company_name}. Please log in to continue.')
 
 

@@ -29,7 +29,7 @@ def all(search: str = None):
 
 def get_professional_by_id(id: int):
     data = read_query(
-        '''SELECT u.id, u.user_name,u.email,u.phone,u.address,t.id,
+        '''SELECT u.id, u.user_name,u.email,u.phone,u.address,t.name,
             p.first_name,p.last_name,p.summary,p.busy
                 FROM users as u
                 LEFT JOIN professionals as p 
@@ -38,7 +38,7 @@ def get_professional_by_id(id: int):
                 ON t.id=u.town_id
             WHERE u.id=?''', (id,))
 
-    return (Professional.from_query_result(*row) for row in data)
+    return next((Professional.from_query_result(*row) for row in data), None)
 
 def get_professional_info_by_id(id: int):
     data = read_query(
