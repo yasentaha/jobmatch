@@ -16,6 +16,15 @@ class User(BaseModel):
     def is_admin(self):
         return self.role == Role.ADMIN
 
+    @classmethod
+    def from_query_result(cls, id, user_name, password, role):
+
+        return cls(
+            id=id,
+            user_name=user_name,
+            password = password,
+            role = role)
+
 class Contact(BaseModel):
     id: int | None
     email: str
@@ -34,36 +43,31 @@ class ProfessionalInfo(BaseModel):
 class Professional(BaseModel):
     id: int | None
     user_name: str
-    # password: str
     email: str
     phone: str | None
     address: str | None
-    town_id: int
+    town_name: str
     first_name: str
     last_name: str
     summary: str | None
     busy: bool
-    # image_url: str
     # active_resumes: int #number of active resumes
     # hidden_resumes: list[int]
 
     @classmethod
-    def from_query_result(cls, id, user_name, password, role, first_name, last_name, summary, busy, image_url, email,
-                          phone, address, town_id):
+    def from_query_result(cls, id, user_name, email, phone, address, town_name, first_name, last_name, summary, busy):
+
         return cls(
             id=id,
             user_name=user_name,
-            password=password,
-            role=role,
-            first_name=first_name,
-            last_name=last_name,
-            summary=summary,
-            busy=busy,
-            image_url=image_url,
             email=email,
             phone=phone,
             address=address,
-            town_id=town_id)
+            town_name = town_name,
+            first_name=first_name,
+            last_name=last_name,
+            summary=summary,
+            busy=busy)
 
 
 class Role:
