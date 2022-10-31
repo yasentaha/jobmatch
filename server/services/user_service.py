@@ -59,10 +59,10 @@ def create_user(user_name: str,
         return None
 
 
-def get_town_id_by_name(town_name:str) -> int:
-    town_id = (read_query_single_element('SELECT id from towns where name = ?', (town_name,)))[0]
+def get_town_id_by_name(town_name:str, read_data_func=database.read_query_single_element) -> int:
+    town_id = (read_data_func('SELECT id from towns where name = ?', (town_name,)))
 
-    return town_id
+    return town_id[0] if town_id else None
 
 
 #WE WILL USE THE ABOVE USER AND CONTACT IDS INTO THIS:
