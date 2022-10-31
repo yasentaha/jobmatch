@@ -115,8 +115,18 @@ class Resume(BaseModel):
     status: str
     town_id: int  # if town_name not in towns, catch error
     main: int
-    # skills: list[Skill] # go to response model
-    # match_request_ids: list[int]
+
+class CreateResume(BaseModel):
+    id: int | None
+    title: str
+    description: str
+    min_salary: int
+    max_salary: int
+    work_place: str
+    status: str
+    town_name: str
+    skill:str
+    stars:int
 
 class CompanyInfo(BaseModel):
     id: int | None
@@ -213,9 +223,9 @@ class Town(BaseModel):
     SMOLIAN = 'Smolian'
     PLEVEN = 'Pleven'
     LOVECH = 'Lovech'
-    VELIK0TARNOVO = 'Veliko Tarnovo'
+    VELIK0TARNOVO = 'Veliko tarnovo'
     GABROVO = 'Gabrovo'
-    STARAZAGORA = 'Stara Zagora'
+    STARAZAGORA = 'Stara zagora'
     HASKOVO = 'Haskovo'
     KARDZHALI = 'Kardzhali'
     TARGOVISHTE = 'Targovishte'
