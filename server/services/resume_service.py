@@ -1,4 +1,4 @@
-from server.data.database import read_query, insert_query, update_query
+from server.data.database import read_query, insert_query, update_query, read_query_single_element
 from server.data.models import Resume, Status, Skill
 
 
@@ -107,6 +107,11 @@ def get_town_by_id(town_id: int):
     WHERE t.id=?''', (town_id,))
 
     return data
+
+def get_town_id_by_name(town_name:str) -> int:
+    town_id = (read_query_single_element('SELECT id from towns where name = ?', (town_name,)))[0]
+
+    return town_id
 
 
 def get_number_of_all_active_resumes(professional_id: int):
