@@ -29,4 +29,28 @@ class UserService_Should(unittest.TestCase):
         self.assertEqual(expected, result)
 
 
+    #Create User
+    def test_createUser_returnsUserWithGeneratedID(self):
+        #Arrange:
+        generated_id = 3
+        insert_data_func = lambda q, user: generated_id
+
+        expected = User(id=generated_id, 
+                        user_name='yasen_taha', 
+                        password='',
+                        role='professional',
+                        email='yasen@gmail.com',
+                        town_id=28)
+
+        #Act:
+        result = user_service.create_user(user_name='yasen_taha', 
+                                            password='fhgjfghkfhdfhdskjhfsdhf',
+                                            role='professional',
+                                            email='yasen@gmail.com',
+                                            town_id=28, insert_data_func=insert_data_func)
+
+        #Assert:
+        self.assertEqual(expected, result) 
+
+
 
