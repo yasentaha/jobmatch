@@ -101,6 +101,8 @@ def get_all_skills_resume_by_id(resume_id: int):
     return (Skill(id=id, name=name, stars=stars)
             for id, name, stars in data)
 
+def get_town_by_id(town_id:int):
+    '''SELECT'''
 
 def get_number_of_all_active_resumes(professional_id: int):
     data = read_query(
