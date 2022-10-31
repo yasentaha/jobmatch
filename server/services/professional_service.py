@@ -44,7 +44,7 @@ def get_professional_info_by_id(id: int):
     data = read_query(
         '''SELECT p.user_id, p.first_name, p.last_name, p.summary, p.busy
                 FROM professionals as p
-            WHERE p.id=?''', (id,))
+            WHERE p.user_id=?''', (id,))
 
     return (ProfessionalInfo(id=user_id,first_name=first_name,last_name=last_name, summary=summary,
                               busy=busy)
@@ -61,9 +61,9 @@ def edit_professional_info(id:int,professional_info: ProfessionalInfo,update_dat
                                     professional_info.summary,professional_info.busy,
                                     id))
 
-    return (ProfessionalInfo(user_id=professional_info.id,first_name=professional_info.first_name,
+    return ProfessionalInfo(user_id=professional_info.id,first_name=professional_info.first_name,
                              last_name=professional_info.last_name,
-                             summary=professional_info.summary,busy=professional_info.busy))
+                             summary=professional_info.summary,busy=professional_info.busy)
 
 
 def sort(professionals: list[Professional], *, attribute='name', reverse=False):
