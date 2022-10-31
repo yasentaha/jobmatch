@@ -49,7 +49,6 @@ def get_resume_by_id(professional_id: int, resume_id: int):
                   town_id=data.town_id, main=data.main)
 
 
-
 def edit_resume_by_professional_idand_resume_id(professional_id: int, resume_id: int, resume: Resume, update_data=None):
     if update_data is None:
         update_data = update_query
@@ -90,7 +89,7 @@ def get_all_archived_resumes_by_professional_id(professional_id: int):
         return [0]
 
 
-def get_all_skills_resume_by_id(resume_id: int):
+def get_all_resume_skills_by_id(resume_id: int):
     data = read_query(
         '''SELECT s.id, s.name,r_s.stars
                  FROM skills as s 
@@ -101,8 +100,14 @@ def get_all_skills_resume_by_id(resume_id: int):
     return (Skill(id=id, name=name, stars=stars)
             for id, name, stars in data)
 
-def get_town_by_id(town_id:int):
-    '''SELECT'''
+
+def get_town_by_id(town_id: int):
+    data = read_query('''SELECT t.name
+    FROM towns as t
+    WHERE t.id=?''', (town_id,))
+
+    return data
+
 
 def get_number_of_all_active_resumes(professional_id: int):
     data = read_query(
