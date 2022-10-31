@@ -116,9 +116,9 @@ class Resume(BaseModel):
     min_salary: int
     max_salary: int
     work_place: str
+    main: int
     status: str
     town_id: int  # if town_name not in towns, catch error
-    main: int
 
 class CreateResume(BaseModel):
     id: int | None
@@ -127,9 +127,10 @@ class CreateResume(BaseModel):
     min_salary: int
     max_salary: int
     work_place: str
+    main: int
     status: str
     town_name: str
-    skill:str
+    skill_name:str
     stars:int
 
 class CompanyInfo(BaseModel):
