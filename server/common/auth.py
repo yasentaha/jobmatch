@@ -1,9 +1,9 @@
 from datetime import date, datetime, timedelta
 from jose import jwt, JWTError
 from fastapi import HTTPException, status
-from data.models import Professional, Company, User
-from services.user_service import find_by_username
-from data.database import read_query
+from server.data.models import Professional, Company, User
+from server.services.user_service import find_by_username
+from server.data.database import read_query
 
 SECRET_KEY = 'secret'
 ALGORITHM = 'HS256'
