@@ -89,4 +89,96 @@ class UserService_Should(unittest.TestCase):
         self.assertEqual(expected, result) 
 
 
+    #Valid Email
+    def test_validEmail_returns_Email_when_valid(self):
+        #Arrange:
+        email = 'yasen@gmail.com'
+        expected = email
 
+        #Act:
+        result = user_service.valid_email(email)
+
+        #Assert:
+        self.assertEqual(expected, result)
+
+    def test_validEmail_returns_None_when_invalidEmailExtension(self):
+        #Arrange:
+        email = 'yasen@gmail'
+        expected = None
+
+        #Act:
+        result = user_service.valid_email(email)
+
+        #Assert:
+        self.assertEqual(expected, result)
+
+    def test_validEmail_returns_None_when_invalidEmail_NoAtMail(self):
+        #Arrange:
+        email = 'yasengmail.com'
+        expected = None
+
+        #Act:
+        result = user_service.valid_email(email)
+
+        #Assert:
+        self.assertEqual(expected, result)
+
+
+    #Valid Username
+    def test_validUsername_returns_userName_when_valid(self):
+        #Arrange:
+        user_name = 'yasen_taha'
+        expected = user_name
+
+        #Act:
+        result = user_service.valid_username(user_name)
+
+        #Assert:
+        self.assertEqual(expected, result)
+
+    def test_validUsername_returns_None_when_lessThanTwoChars(self):
+        #Arrange:
+        user_name = 'y'
+        expected = None
+
+        #Act:
+        result = user_service.valid_username(user_name)
+
+        #Assert:
+        self.assertEqual(expected, result)
+
+    def test_validUsername_returns_None_when_moreThanThirtyChars(self):
+        #Arrange:
+        user_name = 'yasenyasenyasenyasenyasenyaseny'
+        expected = None
+
+        #Act:
+        result = user_service.valid_username(user_name)
+
+        #Assert:
+        self.assertEqual(expected, result)
+
+    #Password Confirmation
+    def test_passwordConfirmation_returns_True_when_bothPasswordsAreSame(self):
+        #Arrange:
+        password = 'adminateyak'
+        confirmation = 'adminateyak'
+        expected = True
+
+        #Act:
+        result = user_service.password_confirmation(password, confirmation)
+
+        #Assert:
+        self.assertEqual(expected, result)
+
+    def test_passwordConfirmation_returns_False_when_bothPasswordsAreNotSame(self):
+        #Arrange:
+        password = 'adminateyak'
+        confirmation = 'adminategotin'
+        expected = False
+
+        #Act:
+        result = user_service.password_confirmation(password, confirmation)
+
+        #Assert:
+        self.assertEqual(expected, result)
