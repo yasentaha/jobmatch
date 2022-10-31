@@ -53,4 +53,40 @@ class UserService_Should(unittest.TestCase):
         self.assertEqual(expected, result) 
 
 
+    #Return Town Id By Name
+    def test_returnTownIdByName_returnsIdWhenTownPresent(self):
+        #Arrange:
+        read_single_data_func = lambda q, town_id: (28,)
+        expected = 28
+
+        #Act:
+        result = user_service.get_town_id_by_name('Sofia', read_data_func=read_single_data_func)
+
+        #Assert:
+        self.assertEqual(expected, result) 
+
+
+    def test_returnTownIdByName_returnsIdWhenTownPresent(self):
+        #Arrange:
+        read_single_data_func = lambda q, town_id: (28,)
+        expected = 28
+
+        #Act:
+        result = user_service.get_town_id_by_name('Sofia', read_data_func=read_single_data_func)
+
+        #Assert:
+        self.assertEqual(expected, result) 
+
+    def test_returnTownIdByName_returnsNoneWhenTownNotPresent(self):
+        #Arrange:
+        read_single_data_func = lambda q, town_id: None
+        expected = None
+
+        #Act:
+        result = user_service.get_town_id_by_name('London', read_data_func=read_single_data_func)
+
+        #Assert:
+        self.assertEqual(expected, result) 
+
+
 
