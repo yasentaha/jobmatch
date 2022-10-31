@@ -1,5 +1,5 @@
 from server.data.database import read_query, update_query, insert_query, read_query_single_element
-from server.data.models import Company, JobAd, Status
+from server.data.models import Company, CompanyInfo, JobAd, Status
 
 
 
@@ -54,6 +54,23 @@ def get_number_of_all_active_job_ads_by_company_id(company_id: int):
     
     return len(data)
 
+def get_company_info_by_id(id: int):
+    data = read_query(
+        '''SELECT u.id, u.email,u.phone,u.address,
+                c.company_name,c.description,c.successful_matches,t.name
+        FROM 
+            users as u
+        LEFT JOIN
+            companies AS c ON c.users_id=u.id
+        LEFT JOIN
+            towns AS t ON u.town_id=t.id
+        WHERE u.id=?''', (id,))
+
+    return next((CompanyInfo.from_query_result(*row) for row in data), None)
+
+# def edit_company_info(id:int ,company_info: CompanyInfo,update_data=None):
+#     if update_data is None:
+#         update_data = update_query
 
 def update_successful_matches(id: int):
     current_company_matches = (read_query_single_element('SELECT successful_matches from companies where id=?', (id,)))[0]
@@ -62,4 +79,11 @@ def update_successful_matches(id: int):
 
     update_query('UPDATE companies SET successful_matches=? WHERE id=?', (updated_company_matches, id))
 
+def sort(companies: list[Company], *, attribute='name', reverse=False):
 
+    if attribute == 'name':
+        def sort_fn(c: Company): return c.company_name
+    else:
+        def sort_fn(c: Company): return c.id
+
+    return sorted(companies, key=sort_fn, reverse=reverse)
