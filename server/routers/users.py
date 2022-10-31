@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Header
-from common.auth import get_user_or_raise_401, create_token
-from common.responses import BadRequest, Forbidden, NotFound, Success
-from data.models import LoginData, User, Contact, Company, Professional, CompanyInfo, ProfessionalInfo, CompanyRegisterData, ProfessionalRegisterData
-from server.data.models import CompanyResponse, ProfessionalResponse
-from services import user_service
+from server.common.auth import get_user_or_raise_401, create_token
+from server.common.responses import BadRequest, Forbidden, NotFound, Success
+from server.data.models import LoginData, User, Contact, Company, Professional, CompanyInfo, ProfessionalInfo, CompanyRegisterData, ProfessionalRegisterData
+from server.data.models import ProfessionalResponse
+from server.services import user_service
 
 
 users_router = APIRouter(prefix='/users')
