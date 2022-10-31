@@ -1,5 +1,6 @@
+from server.common.responses import Success
 from server.data.database import read_query, insert_query, update_query, read_query_single_element
-from server.data.models import Resume, Status, Skill
+from server.data.models import Resume, Status, Skill, CreateResume
 
 
 def all_active_resumes_without_job_salary_and_description(id: int):
@@ -24,18 +25,37 @@ def all_hidden_resumes(id: int):
             for id, title, description, min_salary, max_salary, work_place, status, town_id, main in data)
 
 
-def create(resume: Resume, insert_data=None):
+def create_resume_and_add_skill(professional_id: int, create_resume: CreateResume, insert_data=None):
     if insert_data is None:
         insert_data = insert_query
 
-    generated_id = insert_data(
-        'insert into resumes(title, description, min_salary, max_salary, work_place, status, town_id,main) values(?,?,?,?,?,?,?)',
-        (resume.title, resume.description, resume.min_salary, resume.max_salary, resume.work_place, resume.status,
-         resume.town_id, resume.main))
+    town_id = get_town_id_by_name(create_resume.town_name)
 
-    resume.id = generated_id
+    generated_resume_id = insert_data(
+        '''insert into resumes(title, description, min_salary, max_salary, work_place,main,status,town_id,professional_id) 
+        values(?,?,?,?,?,?,?,?,?)''',
+        (create_resume.title, create_resume.description, create_resume.min_salary, create_resume.max_salary,
+         create_resume.work_place, create_resume.main, town_id, professional_id))
 
-    return resume
+    generated_skill_id = insert_data(
+        '''insert into skills(name) 
+        values(?)''', (create_resume.skill_name))
+
+    skill: Skill
+
+    skill = read_query(
+        '''SELECT s.id, s.name FROM skills as s 
+        WHERE s.name=?''', (create_resume.skill_name))
+
+    create_resume.id = generated_resume_id
+    skill.id = generated_skill_id
+
+    insert_data(
+        '''insert into resumes_skills (resume_id, skill_id, stars) values (?,?,?)''',
+        (create_resume.id,skill.id,create_resume.stars)
+    )
+
+    return Success(f'Resume with title {create_resume.title} was created!')
 
 
 def get_resume_by_id(professional_id: int, resume_id: int):
@@ -101,14 +121,15 @@ def get_all_resume_skills_by_id(resume_id: int):
             for id, name, stars in data)
 
 
-def get_town_by_id(town_id: int):
+def get_town_name_by_id(town_id: int):
     data = read_query('''SELECT t.name
     FROM towns as t
     WHERE t.id=?''', (town_id,))
 
     return data
 
-def get_town_id_by_name(town_name:str) -> int:
+
+def get_town_id_by_name(town_name: str) -> int:
     town_id = (read_query_single_element('SELECT id from towns where name = ?', (town_name,)))[0]
 
     return town_id
