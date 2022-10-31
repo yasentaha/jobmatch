@@ -1,6 +1,6 @@
-from data import database
-from data.database import insert_query, read_query, read_query_single_element, update_query
-from data.models import Professional, Company, Role,User
+from server.data import database
+from server.data.database import insert_query, read_query, read_query_single_element, update_query
+from server.data.models import Professional, Company, Role,User
 from mariadb import IntegrityError
 from datetime import date
 import re
