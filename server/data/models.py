@@ -97,16 +97,16 @@ class Status:
 
 
 class ProfessionalRegisterData(BaseModel):
-    user_name: str
-    password: str
-    confirm_password: str
-    first_name: str
-    last_name: str
+    user_name: str | None
+    password: str | None
+    confirm_password: str | None
+    first_name: str | None
+    last_name: str | None
     summary: str | None
-    email: str
+    email: str | None
     phone: str | None
     address: str | None
-    town_name: str
+    town_name: str | None
 
 
 class Resume(BaseModel):
@@ -162,40 +162,39 @@ class Company(BaseModel):
     company_name: str
     description: str
     email: str
-    phone: str
+    phone: str | None
     address: str
     town_name: str
     successful_matches: int
-    active_job_ads: int
+    # active_job_ads: int
 
     # archived_job_ads: list[int]
 
     @classmethod
-    def from_query_result(cls, id, user_name, password, company_name, description, email, phone, address, 
-                            town_id, successful_matches):
+    def from_query_result(cls, id, user_name, company_name, description, email, phone, address, 
+                            town_name, successful_matches):
         return cls(
             id=id,
             user_name=user_name,
-            password=password,
             company_name=company_name,
             description=description,
             email=email,
             phone=phone,
             address=address,
-            town_id=town_id,
+            town_name=town_name,
             successful_matches=successful_matches)
 
 
 class CompanyRegisterData(BaseModel):
-    user_name: str
-    password: str
-    confirm_password: str
-    company_name: str
-    description: str
-    email: str
+    user_name: str | None
+    password: str | None
+    confirm_password: str | None
+    company_name: str | None
+    description: str | None
+    email: str | None
     phone: str | None
-    address: str
-    town_name: str
+    address: str | None
+    town_name: str | None
 
 
 class JobAd(BaseModel):
