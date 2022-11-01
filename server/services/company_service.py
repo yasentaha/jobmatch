@@ -6,8 +6,8 @@ from server.data.models import Company, CompanyInfo, JobAd, Status
 def get_company_by_id(id: int):
     
     data = read_query(
-        '''SELECT u.id, u.user_name, u.password,u.email,u.phone,u.address,
-                c.company_name,c.description,c.successful_matches,t.name
+        '''SELECT u.id,u.user_name,c.company_name,c.description,u.email,u.phone,u.address,
+                t.name,c.successful_matches
         FROM 
             users as u
         LEFT JOIN
