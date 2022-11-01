@@ -9,11 +9,19 @@ from server.services import user_service, professional_service, company_service
 users_router = APIRouter(prefix='/users')
 
 @users_router.post('/professionals/register')
-def register_professional(data: ProfessionalRegisterData):
+def register_professional(data: ProfessionalRegisterData, 
+                        mandatory_user=user_service.mandatory_fields_user_contact,
+                        mandatory_professional=user_service.mandatory_fields_professional):
 
-    mandatory_fields_user_contact(data.user_name, data.password, data.confirm_password, data.email, data.town_name)
+    mandatory_response_user = mandatory_user(data.user_name, data.password, data.confirm_password, data.email, data.town_name)
     
-    mandatory_fields_professional(data.first_name, data.last_name)
+    if mandatory_response_user:
+        return mandatory_response_user
+    
+    mandatory_response_professional = mandatory_professional(data.first_name, data.last_name)
+
+    if mandatory_response_professional:
+        return mandatory_response_professional
 
     role = 'professional'
 
@@ -38,11 +46,19 @@ def register_professional(data: ProfessionalRegisterData):
     #else think if the above may not be successful, if yes, delete the row in users (rollback)
 
 @users_router.post('/companies/register')
-def register_company(data: CompanyRegisterData):
+def register_company(data: CompanyRegisterData,
+                    mandatory_user=user_service.mandatory_fields_user_contact,
+                    mandatory_company=user_service.mandatory_fields_company):
 
-    mandatory_fields_user_contact(data.user_name, data.password, data.confirm_password, data.email, data.town_name)
+    mandatory_response_user = mandatory_user(data.user_name, data.password, data.confirm_password, data.email, data.town_name)
     
-    mandatory_fields_company(data.company_name, data.description, data.address)
+    if mandatory_response_user:
+        return mandatory_response_user
+
+    mandatory_response_company = mandatory_company(data.company_name, data.description, data.address)
+
+    if mandatory_response_company:
+        return mandatory_response_company
 
     role = 'company'
 
@@ -78,52 +94,6 @@ def login(data: LoginData):
         return BadRequest('Invalid login data')
 
 
-def mandatory_fields_user_contact(user_name:str, password, confirm_password:str, email:str, town_name:str):
-    if not user_name:
-        return BadRequest('User Name field is mandatory!')
-    
-    if not user_service.valid_username(user_name):
-        return BadRequest('Please enter a user name that is bigger than 2 and less than 30 symbols.')
-        
-    if not password:
-        return BadRequest('Passowrd field is mandatory!')
 
-    if not confirm_password:
-        return BadRequest('Please confirm password.')
-    
-    if not user_service.password_confirmation(password, confirm_password):
-        return BadRequest('Passwords do not match.')
-
-    if not email:
-        return BadRequest('Email field is mandatory!')
-
-    if not user_service.valid_email(email):
-        return BadRequest('Please enter a valid email address.')
-    
-    if not town_name:
-        return BadRequest('Town Name field is mandatory!')
-    
-    pass
-
-def mandatory_fields_professional(first_name:str, last_name: str):
-    if not first_name:
-        return BadRequest('First Name field is mandatory!')
-
-    if not last_name:
-        return BadRequest('Last Name field is mandatory!')
-
-    pass
-
-    
-def mandatory_fields_company(company_name:str, description: str, address:str):
-    if not company_name:
-        return BadRequest('Company Name field is mandatory!')
-
-    if not description:
-        return BadRequest('Description field is mandatory!')
-    
-    if not address:
-        return BadRequest('Please enter your address.')
-    pass
 
     
