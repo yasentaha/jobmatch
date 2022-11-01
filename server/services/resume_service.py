@@ -144,8 +144,15 @@ def get_number_of_all_active_resumes(professional_id: int):
     return len(data)
 
 
-def add_skill(professional_id: int, resume_id: int, skill: Skill):
-    return None
+def add_skill(resume_id: int, skill: Skill):
+    auto_increment_id = insert_query(
+        '''INSERT INTO skills(name) VALUES (?)''', (skill.name))
+
+    skill.id = auto_increment_id
+
+    insert_query(
+        '''INSERT INTO resumes_skills(resume_id, skill_id, stars) VALUES (?,?,?)''',
+        (resume_id, skill.id, skill.stars))
 
 
 def if_skill_not_exist_return_true_else_false(professional_id: int, resume_id: int, skill: Skill):
@@ -160,6 +167,7 @@ def if_skill_not_exist_return_true_else_false(professional_id: int, resume_id: i
             return False
 
     return True
+
 
 def get_list_of_matches(id: int):
     return None

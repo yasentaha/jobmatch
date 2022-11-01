@@ -142,10 +142,11 @@ class CompanyInfo(BaseModel):
     phone: str | None
     address: str | None
     successful_matches: int
+    active_job_ads: int
 
     @classmethod
     def from_query_result(cls, id, company_name, description, email, phone, address, 
-                            town_name, successful_matches):
+                            town_name, successful_matches, active_job_ads):
         return cls(
             id=id,
             company_name=company_name,
@@ -154,7 +155,8 @@ class CompanyInfo(BaseModel):
             phone=phone,
             address=address,
             town_name=town_name,
-            successful_matches=successful_matches)
+            successful_matches=successful_matches,
+            active_job_ads=active_job_ads)
 
 class Company(BaseModel):
     id: int | None
