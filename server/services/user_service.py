@@ -1,6 +1,7 @@
 from server.data import database
 from server.data.database import insert_query, read_query, read_query_single_element, update_query
 from server.data.models import Professional, Company, Role,User
+from server.common.responses import BadRequest, Forbidden, NotFound, Success
 from mariadb import IntegrityError
 from datetime import date
 import re
@@ -123,11 +124,61 @@ def email_exists(email: str):
 
     return any(data)
 
+
+def mandatory_fields_user_contact(user_name:str, password, confirm_password:str, email:str, town_name:str):
+    if not user_name:
+        return BadRequest('User Name field is mandatory!')
+    
+    if not valid_username(user_name):
+        return BadRequest('Please enter a user name that is bigger than 2 and less than 30 symbols.')
+        
+    if not password:
+        return BadRequest('Passowrd field is mandatory!')
+
+    if not confirm_password:
+        return BadRequest('Please confirm password.')
+    
+    if not password_confirmation(password, confirm_password):
+        return BadRequest('Passwords do not match.')
+
+    if not email:
+        return BadRequest('Email field is mandatory!')
+
+    if not valid_email(email):
+        return BadRequest('Please enter a valid email address.')
+    
+    if not town_name:
+        return BadRequest('Town Name field is mandatory!')
+    
+    return None
+
+def mandatory_fields_professional(first_name:str, last_name: str):
+    if not first_name:
+        return BadRequest('First Name field is mandatory!')
+
+    if not last_name:
+        return BadRequest('Last Name field is mandatory!')
+
+    return None
+
+    
+def mandatory_fields_company(company_name:str, description: str, address:str):
+    if not company_name:
+        return BadRequest('Company Name field is mandatory!')
+
+    if not description:
+        return BadRequest('Description field is mandatory!')
+    
+    if not address:
+        return BadRequest('Please enter your address.')
+    return None
+
+
 #ATTENTION: 
 #HOW TO HAVE A TRANSACTIONAL BEHAVIOR WHEN REGISTERING
 '''
 LEFT TO DO:
-- PASSWORD REGEX??
+- PASSWORD REGEX?? Username regex for space and asterix
 - ADMIN???
-- UNIT TESTS
+- UNIT TESTS - users router + mandatory fields here
 '''
