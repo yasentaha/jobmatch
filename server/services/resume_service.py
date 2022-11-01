@@ -52,8 +52,7 @@ def create_resume_and_add_skill(professional_id: int, create_resume: CreateResum
 
     insert_data(
         '''insert into resumes_skills (resume_id, skill_id, stars) values (?,?,?)''',
-        (create_resume.id, skill.id, create_resume.stars)
-    )
+        (create_resume.id, skill.id, create_resume.stars))
 
     return Success(f'Resume with title {create_resume.title} was created!')
 
@@ -138,7 +137,7 @@ def get_town_id_by_name(town_name: str) -> int:
 
 def get_number_of_all_active_resumes(professional_id: int):
     data = read_query(
-        '''SELECT r.id FROM RESUMES
+        '''SELECT r.id FROM resumes as r 
         WHERE r.professional_id=? AND r.status=?''', (professional_id, f'%{Status.ACTIVE}%',))
 
     return len(data)
