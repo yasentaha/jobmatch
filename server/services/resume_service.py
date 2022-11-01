@@ -52,7 +52,7 @@ def create_resume_and_add_skill(professional_id: int, create_resume: CreateResum
 
     insert_data(
         '''insert into resumes_skills (resume_id, skill_id, stars) values (?,?,?)''',
-        (create_resume.id,skill.id,create_resume.stars)
+        (create_resume.id, skill.id, create_resume.stars)
     )
 
     return Success(f'Resume with title {create_resume.title} was created!')
@@ -69,7 +69,8 @@ def get_resume_by_id(professional_id: int, resume_id: int):
                   town_id=data.town_id, main=data.main)
 
 
-def edit_resume_by_professional_id_and_resume_id(professional_id: int, resume_id: int, resume: Resume, update_data=None):
+def edit_resume_by_professional_id_and_resume_id(professional_id: int, resume_id: int, resume: Resume,
+                                                 update_data=None):
     if update_data is None:
         update_data = update_query
 
@@ -142,6 +143,23 @@ def get_number_of_all_active_resumes(professional_id: int):
 
     return len(data)
 
+
+def add_skill(professional_id: int, resume_id: int, skill: Skill):
+    return None
+
+
+def if_skill_not_exist_return_true_else_false(professional_id: int, resume_id: int, skill: Skill):
+    data = read_query(
+        '''SELECT s.name FROM resumes as r
+        LEFT JOIN resumes_skills rs on r.id = rs.resume_id
+        LEFT JOIN skills s on rs.skill_id = s.id
+        WHERE r.professional_id=? AND r.id=?''', (professional_id, resume_id))
+
+    for name in data:
+        if skill.name.lower() == name.lower():
+            return False
+
+    return True
 
 def get_list_of_matches(id: int):
     return None
