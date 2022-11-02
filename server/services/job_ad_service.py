@@ -46,6 +46,13 @@ def get_all_archived_job_ads_by_company_id(company_id: int):
     else:
         return [0]
 
+def get_number_of_all_active_job_ads_by_company_id(company_id: int):
+    data = read_query(
+        '''SELECT j.id
+                FROM job_ads as j
+                    WHERE j.company_id=? AND j.status=?''', (company_id, f'%{Status.ACTIVE}%'))
+    
+    return len(data)
 
 def get_all_skills_for_job_ad_id(job_ad_id: int):
     data = read_query(
@@ -64,3 +71,6 @@ def update_job_ads_views(id: int):
     updated_job_ads_view = current_job_ads_view + 1
 
     update_query('UPDATE job_ads SET views=? WHERE id=?', (updated_job_ads_view, id))
+
+def get_list_of_matches(id: int):
+    return None
