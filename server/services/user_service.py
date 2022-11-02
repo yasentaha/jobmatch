@@ -2,7 +2,7 @@ from server.data import database
 from server.data.database import insert_query, read_query, read_query_single_element, update_query
 from server.data.models import Professional, Company, Role,User
 from server.common.responses import BadRequest, Forbidden, NotFound, Success
-from mariadb import IntegrityError
+from mariadb import IntegrityError, DataError
 from datetime import date
 import re
 
@@ -93,6 +93,23 @@ def create_company(user_id: int,
                             description) VALUES (?,?,?)''',
             (user_id, company_name, description))
 
+def get_user_by_id(id:int, get_data_func = database.read_query) -> User | None:
+    data = get_data_func(
+        'SELECT id, user_name, password, role FROM users WHERE id = ?',
+        (id,))
+
+    return next((User(id=id, user_name=user_name, password='', role=role) for id, user_name, password, role in data), None)
+
+def edit_user_info(id: int, email:str, phone:str, address:str, town_id:int, update_data_func=database.update_query) -> int:
+    try:
+        edited_info = update_data_func('''
+                                    UPDATE users 
+                                    SET email = ?, phone = ?, address = ?, town_id = ?
+                                    WHERE id = ?''', (email, phone, address, town_id, id))
+        return True
+    
+    except DataError:
+        return False
 
 def valid_username(user_name: str):
     '''Expects a user name as string, and if valid, it will return it, otherwise it will return None.'''
@@ -109,12 +126,6 @@ def valid_email(email: str):
     else:
         return None
 
-def get_user_by_id(id:int, get_data_func = database.read_query) -> User | None:
-    data = get_data_func(
-        'SELECT id, user_name, password, role FROM users WHERE id = ?',
-        (id,))
-
-    return next((User(id=id, user_name=user_name, password='', role=role) for id, user_name, password, role in data), None)
 
 def password_confirmation(password:str, confirm_password:str):
     return password == confirm_password
