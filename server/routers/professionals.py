@@ -9,13 +9,13 @@ from server.services.professional_service import edit_professional_info, get_pro
 
 class ProfessionalResponseModel(BaseModel):
     professional: Professional
-    active_resumes: list[Resume]
+    active_resumes: int
 
 
 class PersonalProfessionalResponseModel(BaseModel):
     professional: Professional
+    active_resumes: int
     list_of_matches: list[int]
-    active_resumes: list[Resume]
 
 
 professionals_router = APIRouter(prefix='/professionals')
@@ -48,14 +48,14 @@ def get_professional_by_id(id: int, x_token: str = Header()):
     if user.id == id or user.is_admin():
         return PersonalProfessionalResponseModel(
             professional=professional,
-            list_of_matches=resume_service.get_list_of_matches(id),
-            active_resumes=resume_service.get_all_active_resumes_by_professional_id(id)
+            active_resumes=resume_service.get_number_of_all_active_resumes(id),
+            list_of_matches=resume_service.get_list_of_matches(id)
         )
 
     else:
         return ProfessionalResponseModel(
             professional=professional,
-            list_of_matches=resume_service.get_list_of_matches(id)
+            active_resumes=resume_service.get_number_of_all_active_resumes(id)
         )
 
 
