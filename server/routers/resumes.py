@@ -5,7 +5,8 @@ from server.common.responses import Forbidden, Unauthorized, Success
 from server.data.models import Resume, Skill, CreateResume
 from server.routers import professionals
 from server.services import resume_service
-from server.services.resume_service import create_resume_and_add_skill, get_resume_by_id, get_all_resume_skills_by_id
+from server.services.resume_service import create_resume_and_add_skill, get_resume_by_id, get_all_resume_skills_by_id, \
+    edit_resume_by_professional_id_and_resume_id
 
 
 class ResumeResponseModel(BaseModel):
@@ -35,6 +36,16 @@ def create_resume(professional_id: int, create_resume: CreateResume, x_token: He
 
     return Success(f'Resume with title {new_resume.title} was created!')
 
+
+@resumes_router.get('/{id}/resumes/{resume_id}')
+def edit_resume(professional_id: int, resume_id: int, resume: Resume, x_token: Header()):
+    user = get_user_or_raise_401(x_token)
+
+    if user.id == professional_id:
+        edited_resume = edit_resume_by_professional_id_and_resume_id(professional_id, resume_id, resume)
+        return edited_resume
+
+    return Unauthorized('Access denied, you do not have permission to edit this resume!')
 
 @resumes_router.get('/{id}/resumes/{resume_id}')
 def view_resume(professional_id: int, resume_id: int, x_token: Header()):
