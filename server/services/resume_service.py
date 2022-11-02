@@ -3,7 +3,7 @@ from server.data.database import read_query, insert_query, update_query, read_qu
 from server.data.models import Resume, Status, Skill, CreateResume
 
 
-def all_active_resumes_without_job_salary_and_description(id: int):
+def all_active_resumes_without_job_salary_and_description_by_id(id: int):
     data = read_query(
         '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, r.work_place, r.status, r.town_id,r.main 
                 FROM resumes as r
@@ -14,7 +14,7 @@ def all_active_resumes_without_job_salary_and_description(id: int):
             for id, title, description, min_salary, max_salary, work_place, status, town_id, main in data)
 
 
-def all_hidden_resumes(id: int):
+def all_hidden_resumes_by_id(id: int):
     data = read_query(
         '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, r.work_place, r.status, r.town_id,r.main 
                 FROM resumes as r
@@ -124,7 +124,7 @@ def get_all_resume_skills_by_id(resume_id: int):
 def get_town_name_by_id(town_id: int):
     data = read_query('''SELECT t.name
     FROM towns as t
-    WHERE t.id=?''', (town_id,))
+    WHERE t.id=?''', (town_id,))[0]
 
     return data
 
