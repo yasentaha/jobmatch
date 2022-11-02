@@ -1,28 +1,46 @@
 from server.data.database import read_query, insert_query, update_query
-from server.data.models import Professional, Resume, Status, ProfessionalInfo
+from server.data.models import Professional, Resume, Status, ProfessionalInfo, Role
+from server.common.responses import BadRequest
+from mariadb import DataError, OperationalError
 
-
-def all(search: str = None):
+def all(search: str | None = None, search_by: str | None = None):
     if search is None:
         data = read_query(
-            '''SELECT u.id, u.user_name,u.email,u.phone,u.address,t.id,
-            p.first_name,p.last_name,p.summary,p.busy
-                FROM users as u
-                LEFT JOIN professionals as p 
-                ON u.id= p.user_id
-                LEFT JOIN towns as t
-                ON t.id=u.town_id''')
-
-    else:
-        data = read_query(
-            '''SELECT u.id, u.user_name,u.email,u.phone,u.address,t.id,
+            '''SELECT u.id, u.user_name,u.email,u.phone,u.address,t.name,
             p.first_name,p.last_name,p.summary,p.busy
                 FROM users as u
                 LEFT JOIN professionals as p 
                 ON u.id= p.user_id
                 LEFT JOIN towns as t
                 ON t.id=u.town_id
-               WHERE p.first_name LIKE ?''', (f'%{search}%',))
+                WHERE u.role=?''',(f'{Role.PROFESSIONAL}',))
+    else:
+        try:
+            if search_by != 'town_name':
+                data = read_query(
+                f'''SELECT u.id, u.user_name,u.email,u.phone,u.address,t.name,
+                p.first_name,p.last_name,p.summary,p.busy
+                FROM users as u
+                LEFT JOIN professionals as p 
+                ON u.id= p.user_id
+                LEFT JOIN towns as t    
+                ON t.id=u.town_id
+               WHERE u.role=? AND p.{search_by} LIKE ?''', (f'{Role.PROFESSIONAL}',f'%{search}%'))
+    
+            else:
+                search_by = 'name'
+                data = read_query(
+                f'''SELECT u.id, u.user_name,u.email,u.phone,u.address,t.name,
+                p.first_name,p.last_name,p.summary,p.busy
+                FROM users as u
+                LEFT JOIN professionals as p 
+                ON u.id= p.user_id
+                LEFT JOIN towns as t    
+                ON t.id=u.town_id
+               WHERE u.role=? AND t.{search_by} LIKE ?''', (f'{Role.PROFESSIONAL}',f'%{search}%'))
+        
+        except OperationalError:
+            return BadRequest('Invalid search_by query.')
 
     return (Professional.from_query_result(*row) for row in data)
 
@@ -64,6 +82,23 @@ def edit_professional_info(id:int,professional_info: ProfessionalInfo,update_dat
     return ProfessionalInfo(user_id=professional_info.id,first_name=professional_info.first_name,
                              last_name=professional_info.last_name,
                              summary=professional_info.summary,busy=professional_info.busy)
+
+def edit_professional(id:int,professional: Professional,update_data=None):
+    if update_data is None:
+        update_data = update_query
+    try:
+        update_data(
+        '''UPDATE professionals
+            SET first_name = ?,last_name=?,summary=?,busy=?
+             WHERE user_id = ?''', (professional.first_name, professional.last_name,
+                                    professional.summary,professional.busy,
+                                    id))
+
+        return True
+    
+    except DataError:
+        return False
+
 
 
 def sort(professionals: list[Professional], *, attribute='name', reverse=False):
