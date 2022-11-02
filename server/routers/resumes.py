@@ -5,7 +5,7 @@ from server.common.responses import Forbidden, Unauthorized, Success
 from server.data.models import Resume, Skill, CreateResume
 from server.routers import professionals
 from server.services import resume_service
-from server.services.resume_service import create_resume_and_add_skill
+from server.services.resume_service import create_resume_and_add_skill, get_resume_by_id, get_all_resume_skills_by_id
 
 
 class ResumeResponseModel(BaseModel):
@@ -34,6 +34,19 @@ def create_resume(professional_id: int, create_resume: CreateResume, x_token: He
     new_resume = create_resume_and_add_skill(professional_id, create_resume)
 
     return Success(f'Resume with title {new_resume.title} was created!')
+
+
+@resumes_router.get('/{id}/resumes/{resume_id}')
+def view_resume(professional_id: int, resume_id: int, x_token: Header()):
+    user = get_user_or_raise_401(x_token)
+
+    if user:
+        return ResumeWithSkillsResponseModel(
+            resune=get_resume_by_id(professional_id, resume_id),
+            skills=get_all_resume_skills_by_id(resume_id)
+        )
+
+    return Unauthorized('Please log in!')
 
 
 @resumes_router.get('/')
