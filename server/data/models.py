@@ -228,7 +228,7 @@ class JobAd(BaseModel):
 class MatchRequestResponse(BaseModel):
     id: int
     resume_id: Resume  # MOJEM LI DA GO NAPRAVIM EDNO DO DRUGO
-    job_ad: JobAd
+    job_ad_id: JobAd
     match: int
     request_from: str
 
