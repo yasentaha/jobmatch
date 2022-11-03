@@ -5,7 +5,7 @@ from server.common.auth import get_user_or_raise_401
 from server.common.responses import NotFound, Forbidden, Unauthorized, BadRequest, Success
 from server.data.models import Company, JobAd, CompanyInfo, CompanyResponseModel, PersonalCompanyResponseModel
 from server.services.company_service import get_company_info_by_id, get_company_by_id, edit_company, get_all_companies
-from server.services.user_service import edit_user_info, get_town_id_by_name
+from server.services.user_service import edit_user_info, get_town_id_by_name, valid_email
 from server.services import company_service, job_ad_service
 
 
@@ -15,6 +15,11 @@ companies_router = APIRouter(prefix='/companies')
 def get_companies(search: str | None = None, search_by: str | None = None, sort: str | None = None, x_token=Header()):
     user = get_user_or_raise_401(x_token)
 
+    search_validation = ['company_name', 'town_name']
+
+    if search_by and search_by not in search_validation:
+        return BadRequest(f'Cannot search by parameter {search_by}.')
+
     if user:
         companies = company_service.get_all_companies(search, search_by)
     else:
@@ -23,6 +28,9 @@ def get_companies(search: str | None = None, search_by: str | None = None, sort:
     if sort and (sort == 'asc' or sort == 'desc'):
         return company_service.sort(companies, reverse=sort == 'desc')
     else:
+        if not companies:
+            return NotFound('Your search returned no results!')
+
         return companies
 
 @companies_router.get('/{id}')
@@ -51,7 +59,10 @@ def edit_company_by_id(id: int, company: Company, x_token: str = Header()):
     user = get_user_or_raise_401(x_token)
 
     if not user.id == id:
-        return Unauthorized('You do not have permission to change Company info!')
+        return Forbidden('You do not have permission to change Company info!')
+
+    if not valid_email(company.email):
+        return BadRequest('Please enter a valid email address.')
 
     town_id = get_town_id_by_name(company.town_name)
     if not town_id:
