@@ -2,7 +2,7 @@ from sqlite3 import OperationalError
 from server.common.responses import Success, BadRequest, NotFound
 from server.data.database import read_query, insert_query, update_query, read_query_single_element
 from server.data.models import Resume, Status, Skill, CreateResume, Role, JobAd, MatchRequestResponse
-from server.routers.professionals import get_professional_by_id
+from server.services.professional_service import get_professional_by_id
 
 
 def all_active_resumes_without_job_salary_and_description_by_id(id: int):
@@ -26,6 +26,19 @@ def all_hidden_resumes_by_id(id: int):
                    work_place=work_place, status=status, town_id=town_id, main=main)
             for id, title, description, min_salary, max_salary, work_place, status, town_id, main in data)
 
+def create_resume(professional_id: int, create_resume: CreateResume, insert_data=None):
+    if insert_data is None:
+        insert_data = insert_query
+
+    town_id = get_town_id_by_name(create_resume.town_name)
+
+    generated_resume_id = insert_data(
+        '''insert into resumes(title, description, min_salary, max_salary, work_place,main,status,town_id,professional_id) 
+        values(?,?,?,?,?,?,?,?,?)''',
+        (create_resume.title, create_resume.description, create_resume.min_salary, create_resume.max_salary,
+         create_resume.work_place, create_resume.main, town_id, professional_id))
+
+    return get_resume_by_id(professional_id,generated_resume_id)
 
 def create_resume_and_add_skill(professional_id: int, create_resume: CreateResume, insert_data=None):
     if insert_data is None:
@@ -145,11 +158,41 @@ def get_number_of_all_active_resumes(professional_id: int):
     return len(data)
 
 
-def add_skill(resume_id: int, skill: Skill):
-    auto_increment_id = insert_query(
-        '''INSERT INTO skills(name) VALUES (?)''', (skill.name))
+def add_skills(skills: list[Skill]): #add skill in DB
+    for skill in skills:
+        if not skill_exists(skill.name):
+            add_skill(skill.name)
 
-    skill.id = auto_increment_id
+def return_skills_with_ids(skills: list[Skill]) -> list[Skill]:
+    skills_with_ids = []
+    for skill in skills:
+        skill.id = get_skill_id_by_name(skill.name)
+        skills_with_ids.append(skill)
+
+    return skills_with_ids
+
+def add_skill(skill_name: str):
+    auto_increment_id = insert_query(
+        '''INSERT INTO skills(name) VALUES (?)''', (skill_name))
+
+    return auto_increment_id
+
+def skill_exists(skill_name:str) -> bool:
+    skill_name = skill_name.lower()
+    data = read_query('SELECT 1 from skills where name = ?', (skill_name,))
+
+    return any(data)
+
+def get_skill_id_by_name(skill_name:str) -> int:
+    skill_id = (read_query_single_element('SELECT id from skills where name = ?', (skill_name,)))
+
+    return skill_id[0] if skill_id else None
+
+def add_skill_to_resume(resume_id: int, skill: Skill):
+    # auto_increment_id = insert_query(
+    #     '''INSERT INTO skills(name) VALUES (?)''', (skill.name))
+
+    # skill.id = auto_increment_id
 
     insert_query(
         '''INSERT INTO resumes_skills(resume_id, skill_id, stars) VALUES (?,?,?)''',
