@@ -1,7 +1,8 @@
 from sqlite3 import OperationalError
-from server.common.responses import Success, BadRequest
+from server.common.responses import Success, BadRequest, NotFound
 from server.data.database import read_query, insert_query, update_query, read_query_single_element
-from server.data.models import Resume, Status, Skill, CreateResume, Role, JobAd
+from server.data.models import Resume, Status, Skill, CreateResume, Role, JobAd, MatchRequestResponse
+from server.routers.professionals import get_professional_by_id
 
 
 def all_active_resumes_without_job_salary_and_description_by_id(id: int):
@@ -155,7 +156,7 @@ def add_skill(resume_id: int, skill: Skill):
         (resume_id, skill.id, skill.stars))
 
 
-def if_skill_not_exist_return_true_else_false(professional_id: int, resume_id: int, skill: Skill):
+def not_exist_skill(professional_id: int, resume_id: int, skill: Skill):
     data = read_query(
         '''SELECT s.name FROM resumes as r
         LEFT JOIN resumes_skills rs on r.id = rs.resume_id
@@ -168,6 +169,7 @@ def if_skill_not_exist_return_true_else_false(professional_id: int, resume_id: i
 
     return True
 
+
 def search_all_active_job_ads(search: str | None = None, search_by: str | None = None):
     if search is None:
         data = read_query(
@@ -176,7 +178,7 @@ def search_all_active_job_ads(search: str | None = None, search_by: str | None =
                 job_ads AS j
             LEFT JOIN
                 towns AS t ON j.town_id=t.id
-            WHERE j.status=?''',(f'{Status.ACTIVE}',))
+            WHERE j.status=?''', (f'{Status.ACTIVE}',))
     else:
         try:
 
@@ -184,12 +186,41 @@ def search_all_active_job_ads(search: str | None = None, search_by: str | None =
                 '''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, j.work_place, j.status, j.views, t.name
                 FROM   job_ads AS j
                 LEFT JOIN towns AS t ON j.town_id=t.id
-                WHERE j.status=? AND j.{search_by} LIKE ?''', (f'{Status.ACTIVE}',f'%{search}%'))
+                WHERE j.status=? AND j.{search_by} LIKE ?''', (f'{Status.ACTIVE}', f'%{search}%'))
 
         except OperationalError:
             return BadRequest('Invalid search_by query.')
 
     return (JobAd.from_query_result(*row) for row in data)
+
+
+def create_match_request_by_professional(professional_id: int, resume_id: int):
+    # no match by skills !!!
+
+    selected_resume: Resume
+    professional = get_professional_by_id(professional_id)
+    success = False
+
+    selected_resume = get_resume_by_id(professional_id, resume_id)
+
+    town_name = get_town_name_by_id(selected_resume.town_id)
+
+    all_active_job_ads = search_all_active_job_ads()
+
+    data: MatchRequestResponse
+
+    for job_ad in all_active_job_ads:
+        if selected_resume.title == job_ad.title and selected_resume.min_salary <= job_ad.min_salary and town_name == job_ad.town_name:
+            data = insert_query('''
+            INSERT INTO match_requests(id, resume_id, job_ad_id, `match`, request_from) VALUES (?,?,?,?)''',
+                                (selected_resume.id, job_ad.id, 1, professional.first_name))
+            success = True
+            break
+
+    if success:
+        return MatchRequestResponse(data.id, data.resume_id, data.job_ad, data.match, data.request_from)
+
+    return NotFound('You do not have to satisfy every requirement or meet every qualification listed!')
 
 
 def get_list_of_matches(id: int):
