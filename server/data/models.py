@@ -18,12 +18,12 @@ class User(BaseModel):
 
     @classmethod
     def from_query_result(cls, id, user_name, password, role):
-
         return cls(
             id=id,
             user_name=user_name,
-            password = password,
-            role = role)
+            password=password,
+            role=role)
+
 
 class Contact(BaseModel):
     id: int | None
@@ -31,6 +31,7 @@ class Contact(BaseModel):
     phone: str | None
     address: str
     town_id: int
+
 
 class ProfessionalInfo(BaseModel):
     id: int | None
@@ -51,19 +52,19 @@ class Professional(BaseModel):
     last_name: str
     summary: str | None
     busy: bool
+
     # active_resumes: int #number of active resumes
     # hidden_resumes: list[int]
 
     @classmethod
     def from_query_result(cls, id, user_name, email, phone, address, town_name, first_name, last_name, summary, busy):
-
         return cls(
             id=id,
             user_name=user_name,
             email=email,
             phone=phone,
             address=address,
-            town_name = town_name,
+            town_name=town_name,
             first_name=first_name,
             last_name=last_name,
             summary=summary,
@@ -120,6 +121,7 @@ class Resume(BaseModel):
     status: str
     town_id: int  # if town_name not in towns, catch error
 
+
 class CreateResume(BaseModel):
     id: int | None
     title: str
@@ -130,14 +132,16 @@ class CreateResume(BaseModel):
     main: int
     status: str
     town_name: str
-    skill_name:str
-    stars:int
+    skill_name: str
+    stars: int
+
 
 class CompanyInfo(BaseModel):
     id: int | None
     company_name: str
     description: str
     successful_matches: int
+
     # town_name: str
     # email: str
     # phone: str | None
@@ -152,6 +156,7 @@ class CompanyInfo(BaseModel):
             description=description,
             successful_matches=successful_matches)
 
+
 class Company(BaseModel):
     id: int | None
     user_name: str
@@ -162,13 +167,14 @@ class Company(BaseModel):
     address: str
     town_name: str
     successful_matches: int
+
     # active_job_ads: int
 
     # archived_job_ads: list[int]
 
     @classmethod
-    def from_query_result(cls, id, user_name, company_name, description, email, phone, address, 
-                            town_name, successful_matches):
+    def from_query_result(cls, id, user_name, company_name, description, email, phone, address,
+                          town_name, successful_matches):
         return cls(
             id=id,
             user_name=user_name,
@@ -216,13 +222,15 @@ class JobAd(BaseModel):
             work_place=work_place,
             status=status,
             town_name=town_name
-            )
+        )
 
 
 class MatchRequestResponse(BaseModel):
     id: int
+    resume_id: Resume  # MOJEM LI DA GO NAPRAVIM EDNO DO DRUGO
     job_ad: JobAd
-    resume: Resume  # MOJEM LI DA GO NAPRAVIM EDNO DO DRUGO
+    match: int
+    request_from: str
 
 
 class Town(BaseModel):
@@ -257,6 +265,7 @@ class Town(BaseModel):
     all_towns = [SOFIA, PLOVDIV, RUSE, VARNA, BURGAS, VIDIN, MONTANA, PERNIK, KIUSTENDIL, BLAGOEVGRAD, VRATSA,
                  PAZARDZHIK, SMOLIAN, PLEVEN, LOVECH, VELIK0TARNOVO, GABROVO, STARAZAGORA, HASKOVO, KARDZHALI,
                  TARGOVISHTE, SLIVEN, YAMBOL, SILISTRA, RAZGRAD, SHUMEN, DOBRICH]
+
 
 class ProfessionalResponse(BaseModel):
     id: int
