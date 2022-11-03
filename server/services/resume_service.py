@@ -1,6 +1,7 @@
-from server.common.responses import Success
+from sqlite3 import OperationalError
+from server.common.responses import Success, BadRequest
 from server.data.database import read_query, insert_query, update_query, read_query_single_element
-from server.data.models import Resume, Status, Skill, CreateResume
+from server.data.models import Resume, Status, Skill, CreateResume, Role, JobAd
 
 
 def all_active_resumes_without_job_salary_and_description_by_id(id: int):
@@ -166,6 +167,29 @@ def if_skill_not_exist_return_true_else_false(professional_id: int, resume_id: i
             return False
 
     return True
+
+def search_all_active_job_ads(search: str | None = None, search_by: str | None = None):
+    if search is None:
+        data = read_query(
+            '''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, j.work_place, j.status, j.views, t.name
+            FROM   
+                job_ads AS j
+            LEFT JOIN
+                towns AS t ON j.town_id=t.id
+            WHERE j.status=?''',(f'{Status.ACTIVE}',))
+    else:
+        try:
+
+            data = read_query(
+                '''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, j.work_place, j.status, j.views, t.name
+                FROM   job_ads AS j
+                LEFT JOIN towns AS t ON j.town_id=t.id
+                WHERE j.status=? AND j.{search_by} LIKE ?''', (f'{Status.ACTIVE}',f'%{search}%'))
+
+        except OperationalError:
+            return BadRequest('Invalid search_by query.')
+
+    return (JobAd.from_query_result(*row) for row in data)
 
 
 def get_list_of_matches(id: int):
