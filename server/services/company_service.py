@@ -16,7 +16,7 @@ def get_company_by_id(id: int):
             companies AS c ON c.user_id=u.id
         LEFT JOIN
             towns AS t ON u.town_id=t.id
-        WHERE u.id=? and u.role=?''', (id, f'{Role.COMPANY}'))
+        WHERE u.id=? and u.role=?''', (id, Role.COMPANY))
 
     return next((Company.from_query_result(*row) for row in data), None)
 
@@ -31,11 +31,10 @@ def get_all_companies(search: str | None = None, search_by: str | None = None):
                     companies AS c ON c.user_id=u.id
                 LEFT JOIN
                     towns AS t ON u.town_id=t.id
-                WHERE u.role=?''',(f'{Role.COMPANY}',))
+                WHERE u.role=?''',(Role.COMPANY,))
     else:
-        try:
-            if search_by != 'town_name':
-                data = read_query(
+        if search_by != 'town_name':
+            data = read_query(
                 f'''SELECT u.id,u.user_name,c.company_name,c.description,u.email,u.phone,u.address,
                     t.name,c.successful_matches
                 FROM 
@@ -44,11 +43,10 @@ def get_all_companies(search: str | None = None, search_by: str | None = None):
                     companies AS c ON c.user_id=u.id
                 LEFT JOIN
                     towns AS t ON u.town_id=t.id
-                WHERE u.role=? AND p.{search_by} LIKE ?''', (f'{Role.COMPANY}',f'%{search}%'))
+                WHERE u.role=? AND c.{search_by} LIKE ?''', (Role.COMPANY,f'%{search}%'))
     
-            else:
-                search_by = 'name'
-                data = read_query(
+        else:
+            data = read_query(
                 f'''SELECT u.id,u.user_name,c.company_name,c.description,u.email,u.phone,u.address,
                     t.name,c.successful_matches
                 FROM 
@@ -57,11 +55,10 @@ def get_all_companies(search: str | None = None, search_by: str | None = None):
                     companies AS c ON c.user_id=u.id
                 LEFT JOIN
                     towns AS t ON u.town_id=t.id
-                WHERE u.role=? AND t.{search_by} LIKE ?''', (f'{Role.COMPANY}',f'%{search}%'))
+                WHERE u.role=? AND t.name LIKE ?''', (f'{Role.COMPANY}',f'%{search}%'))
+    if not data:
+        return None
         
-        except OperationalError:
-            return BadRequest('Invalid search_by query.')
-
     return (Company.from_query_result(*row) for row in data)
 
 
