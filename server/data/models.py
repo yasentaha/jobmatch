@@ -132,8 +132,9 @@ class CreateResume(BaseModel):
     main: int
     status: str
     town_name: str
-    skill_name: str
-    stars: int
+    skills: list[Skill]
+    # skill_name: str
+    # stars: int
 
 
 class CompanyInfo(BaseModel):
