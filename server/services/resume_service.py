@@ -220,16 +220,30 @@ def create_match_request_by_professional(professional_id: int, resume_id: int):
 
     return NotFound('You do not have to satisfy every requirement or meet every qualification listed!')
 
-def get_professional_match_request_by_resume_id(resume_id:int):
+
+def get_professional_match_request_by_resume_id(resume_id: int):
     try:
-        data=read_query('''
+        data = read_query('''
                     SELECT m_r.id,m_r.resume_id, m_r.job_ad_id, m_r.match, m_r.request_from FROM match_requests AS m_r
-                    WHERE m_r.resume_id=?''',(resume_id,))
+                    WHERE m_r.resume_id=?''', (resume_id,))
     except OperationalError:
         return NotFound('You do not have to satisfy every requirement or meet every qualification listed!')
 
-    return MatchRequestResponse(data.id,data.resume_id,data.job_ad_id,
-                                data.match,data.request_from)
+    return MatchRequestResponse(data.id, data.resume_id, data.job_ad_id,
+                                data.match, data.request_from)
+
+
+def get_match_request_by_id(match_request_id: int):
+    try:
+        data = read_query('''
+        SELECT m_r.id,m_r.resume_id,m_r.job_ad_id,m_r.`match`,m_r.request_from FROM match_requests AS m_r
+        WHERE m_r.id=?''', (match_request_id,))
+    except OperationalError:
+        return NotFound(f'Match request with id {match_request_id} not found!')
+
+    return MatchRequestResponse(data.id, data.resume_id, data.job_ad_id,
+                                data.match, data.request_from)
+
 
 def get_list_of_matches(id: int):
     return None
