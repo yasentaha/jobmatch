@@ -4,8 +4,8 @@ from server.common.auth import get_user_or_raise_401
 from server.common.responses import NotFound, Forbidden, Unauthorized, Success, BadRequest
 from server.data.models import Professional, Resume, ProfessionalInfo
 from server.services import professional_service, resume_service
-from server.services.professional_service import edit_professional_info, get_professional_info_by_id, edit_professional
-from server.services.user_service import edit_user_info, get_town_id_by_name
+from server.services.professional_service import edit_professional_info, get_professional_info_by_id, edit_professional, get_professional_by_id
+from server.services.user_service import edit_user_info, get_town_id_by_name, valid_email
 
 
 class ProfessionalResponseModel(BaseModel):
@@ -26,6 +26,11 @@ professionals_router = APIRouter(prefix='/professionals')
 def get_professionals(search: str | None = None, search_by: str | None = None, sort: str | None = None, x_token=Header()):
     user = get_user_or_raise_401(x_token)
 
+    search_validation = ['first_name', 'last_name', 'town_name', 'busy']
+
+    if search_by and search_by not in search_validation:
+        return BadRequest(f'Cannot search by parameter {search_by}.')
+
     if user:
         professionals = professional_service.all(search, search_by)
     else:
@@ -34,14 +39,17 @@ def get_professionals(search: str | None = None, search_by: str | None = None, s
     if sort and (sort == 'asc' or sort == 'desc'):
         return professional_service.sort(professionals, reverse=sort == 'desc')
     else:
+        if not professionals:
+            return NotFound('Your search returned no results!')
+
         return professionals
 
 
 @professionals_router.get('/{id}')
-def get_professional_by_id(id: int, x_token: str = Header()):
+def professional_by_id(id: int, x_token: str = Header()):
     user = get_user_or_raise_401(x_token)
 
-    professional = professional_service.get_professional_by_id(id)
+    professional = get_professional_by_id(id)
 
     if professional is None:
         return NotFound('Professional not found!')
@@ -77,7 +85,10 @@ def edit_professional_by_id(id: int, professional: Professional, x_token: str = 
     user = get_user_or_raise_401(x_token)
 
     if not user.id == id:
-        return Unauthorized('You do not have permission to change Professional info!')
+        return Forbidden('You do not have permission to change Professional info!')
+
+    if not valid_email(professional.email):
+        return BadRequest('Please enter a valid email address.')
 
     town_id = get_town_id_by_name(professional.town_name)
     if not town_id:
