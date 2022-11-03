@@ -13,10 +13,9 @@ def all(search: str | None = None, search_by: str | None = None):
                 ON u.id= p.user_id
                 LEFT JOIN towns as t
                 ON t.id=u.town_id
-                WHERE u.role=?''',(f'{Role.PROFESSIONAL}',))
+                WHERE u.role=?''',(Role.PROFESSIONAL,))
     else:
-        try:
-            if search_by != 'town_name':
+        if search_by != 'town_name':
                 data = read_query(
                 f'''SELECT u.id, u.user_name,u.email,u.phone,u.address,t.name,
                 p.first_name,p.last_name,p.summary,p.busy
@@ -25,10 +24,9 @@ def all(search: str | None = None, search_by: str | None = None):
                 ON u.id= p.user_id
                 LEFT JOIN towns as t    
                 ON t.id=u.town_id
-               WHERE u.role=? AND p.{search_by} LIKE ?''', (f'{Role.PROFESSIONAL}',f'%{search}%'))
+               WHERE u.role=? AND p.{search_by} LIKE ?''', (Role.PROFESSIONAL,f'%{search}%'))
     
-            else:
-                search_by = 'name'
+        else:
                 data = read_query(
                 f'''SELECT u.id, u.user_name,u.email,u.phone,u.address,t.name,
                 p.first_name,p.last_name,p.summary,p.busy
@@ -37,10 +35,10 @@ def all(search: str | None = None, search_by: str | None = None):
                 ON u.id= p.user_id
                 LEFT JOIN towns as t    
                 ON t.id=u.town_id
-               WHERE u.role=? AND t.{search_by} LIKE ?''', (f'{Role.PROFESSIONAL}',f'%{search}%'))
-        
-        except OperationalError:
-            return BadRequest('Invalid search_by query.')
+               WHERE u.role=? AND t.name LIKE ?''', (Role.PROFESSIONAL,f'%{search}%'))
+
+    if not data:
+        return None
 
     return (Professional.from_query_result(*row) for row in data)
 
@@ -54,7 +52,7 @@ def get_professional_by_id(id: int):
                 ON u.id= p.user_id
                 LEFT JOIN towns as t
                 ON t.id=u.town_id
-            WHERE u.id=?''', (id,))
+            WHERE u.id=? and u.role =?''', (id,Role.PROFESSIONAL))
 
     return next((Professional.from_query_result(*row) for row in data), None)
 
