@@ -2,16 +2,6 @@ from server.data.database import read_query, update_query, insert_query, read_qu
 from server.data.models import Company, JobAd, Status, Skill
 
 
-# def create(job_ad: JobAd, company: Company) -> JobAd:
-#     generated_id = insert_query(
-#         '''INSERT INTO job_ads(title, description, min_salary, max_salary, work_place, status, town_id, company_id, views) VALUES(?,?,?,?,?,?,?,?,?)''',
-#         (job_ad.title, job_ad.description, job_ad.min_salary, job_ad.max_salary, job_ad.work_place, job_ad.status, job_ad.town_name, company.id, 0)
-#     )
-#     job_ad.id = generated_id
-
-#     new_job_ad= get_job_ad_by_id(company.id,generated_id)
-
-#     return new_job_ad
 
 
 def get_job_ad_by_id(company_id:int, job_id: int):
@@ -30,7 +20,7 @@ def get_all_active_job_ads_by_company_id(company_id: int):
     data = read_query(
         '''SELECT j.id
                 FROM job_ads as j
-                    WHERE j.company_id=? AND j.status=?''', (company_id, f'%{Status.ACTIVE}%'))
+                    WHERE j.company_id=? AND j.status=?''', (company_id, Status.ACTIVE))
     if data:
         return (id for id in data)
     else:
@@ -40,7 +30,7 @@ def get_all_archived_job_ads_by_company_id(company_id: int):
     data = read_query(
         '''SELECT j.id
                 FROM job_ads as j
-                    WHERE j.company_id=? AND j.status=?''', (company_id, f'%{Status.ARCHIVED}%'))
+                    WHERE j.company_id=? AND j.status=?''', (company_id, Status.ARCHIVED))
 
     if data:
         return (id for id in data)
@@ -51,7 +41,7 @@ def get_number_of_all_active_job_ads_by_company_id(company_id: int):
     data = read_query(
         '''SELECT j.id
                 FROM job_ads as j
-                    WHERE j.company_id=? AND j.status=?''', (company_id, f'%{Status.ACTIVE}%'))
+                    WHERE j.company_id=? AND j.status=?''', (company_id, Status.ACTIVE))
     
     return len(data)
 
@@ -73,11 +63,37 @@ def update_job_ads_views(id: int):
 
     update_query('UPDATE job_ads SET views=? WHERE id=?', (updated_job_ads_view, id))
 
-def add_skill(job_ad_id: int, skill: Skill):
-    generated_id = insert_query(
-        '''INSERT INTO skills(name) VALUES (?)''', (skill.name))
+def add_skills(skills: list[Skill]): 
+    for skill in skills:
+        if not skill_exists(skill.name):
+            add_skill(skill.name)
 
-    skill.id = generated_id
+def return_skills_with_ids(skills: list[Skill]) -> list[Skill]:
+    skills_with_ids = []
+    for skill in skills:
+        skill.id = get_skill_id_by_name(skill.name)
+        skills_with_ids.append(skill)
+
+    return skills_with_ids
+
+def add_skill(skill_name: str):
+    auto_increment_id = insert_query(
+        '''INSERT INTO skills(name) VALUES (?)''', (skill_name))
+
+    return auto_increment_id
+
+def skill_exists(skill_name:str) -> bool:
+    skill_name = skill_name.lower()
+    data = read_query('SELECT 1 from skills where name = ?', (skill_name,))
+
+    return any(data)
+
+def get_skill_id_by_name(skill_name:str) -> int:
+    skill_id = (read_query_single_element('SELECT id from skills where name = ?', (skill_name,)))
+
+    return skill_id[0] if skill_id else None
+
+def add_skill_to_job_ad(job_ad_id: int, skill: Skill):
 
     insert_query(
         '''INSERT INTO job_ads_skills(job_ad_id, skill_id, stars) VALUES (?,?,?)''',
