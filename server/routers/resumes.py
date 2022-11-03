@@ -6,7 +6,7 @@ from server.data.models import Resume, Skill, CreateResume
 from server.routers import professionals
 from server.services import resume_service
 from server.services.resume_service import create_resume_and_add_skill, get_resume_by_id, get_all_resume_skills_by_id, \
-    edit_resume_by_professional_id_and_resume_id
+    edit_resume_by_professional_id_and_resume_id, add_skills, return_skills_with_ids, add_skill_to_resume
 
 
 class ResumeResponseModel(BaseModel):
@@ -20,19 +20,25 @@ class ResumeWithSkillsResponseModel(BaseModel):
     skills: list[Skill]
 
 
-resumes_router = APIRouter(prefix='/professionals')
+resumes_router = APIRouter(prefix='/professionals_resumes')
 
 
-@resumes_router.post('/{id}/resumes')
+@resumes_router.post('/{professional_id}/resumes')
 def create_resume(professional_id: int, create_resume: CreateResume, x_token: Header()):
     user = get_user_or_raise_401(x_token)
 
     if user.id != professional_id:
         return Unauthorized('Access denied, you do not have permission to access on this server!')
 
+    if create_resume.skills:
+        add_skills(create_resume.skills)
+
+    skills_with_ids = return_skills_with_ids(create_resume.skills)
+
     new_resume: CreateResume
 
-    new_resume = create_resume_and_add_skill(professional_id, create_resume)
+    new_resume = resume_service.create_resume(professional_id, create_resume)
+    [add_skill_to_resume(new_resume.id, skill) for skill in skills_with_ids]
 
     return Success(f'Resume with title {new_resume.title} was created!')
 
