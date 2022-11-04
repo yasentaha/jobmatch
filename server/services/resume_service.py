@@ -36,9 +36,9 @@ def create_resume(professional_id: int, create_resume: CreateResume, insert_data
         '''insert into resumes(title, description, min_salary, max_salary, work_place,main,status,town_id,professional_id) 
         values(?,?,?,?,?,?,?,?,?)''',
         (create_resume.title, create_resume.description, create_resume.min_salary, create_resume.max_salary,
-         create_resume.work_place, create_resume.main, town_id, professional_id))
+         create_resume.work_place, create_resume.main, create_resume.status, town_id, professional_id))
 
-    return get_resume_by_id(professional_id,generated_resume_id)
+    return get_resume_by_id(generated_resume_id)
 
 def create_resume_and_add_skill(professional_id: int, create_resume: CreateResume, insert_data=None):
     if insert_data is None:
@@ -72,15 +72,16 @@ def create_resume_and_add_skill(professional_id: int, create_resume: CreateResum
     return Success(f'Resume with title {create_resume.title} was created!')
 
 
-def get_resume_by_id(professional_id: int, resume_id: int):
+def get_resume_by_id(resume_id: int):
     data = read_query(
-        '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, r.work_place, r.status, r.town_id,r.main 
+        '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, r.work_place, r.main, r.status, t.name
                     FROM resumes as r
-                    WHERE r.professional_id=? AND r.id=?''', (professional_id, resume_id))
+                    LEFT JOIN
+                    towns as t
+                    ON r.town_id = t.id
+                    WHERE r.id=?''', (resume_id,))
 
-    return Resume(id=data.id, title=data.title, description=data.description, min_salary=data.min_salary,
-                  max_salary=data.max_salary, work_place=data.work_place, status=data.status,
-                  town_id=data.town_id, main=data.main)
+    return next((Resume.from_query_result(*row) for row in data), None)
 
 
 def edit_resume_by_professional_id_and_resume_id(professional_id: int, resume_id: int, resume: Resume,
@@ -132,8 +133,7 @@ def get_all_resume_skills_by_id(resume_id: int):
                 resumes_skills as r_s
                 ON s.id=r_s.skill_id
                     WHERE r_s.resume_id=?''', (resume_id,))
-    return (Skill(id=id, name=name, stars=stars)
-            for id, name, stars in data)
+    return (Skill.from_query_result(*row) for row in data)
 
 
 def get_town_name_by_id(town_id: int):
@@ -173,7 +173,7 @@ def return_skills_with_ids(skills: list[Skill]) -> list[Skill]:
 
 def add_skill(skill_name: str):
     auto_increment_id = insert_query(
-        '''INSERT INTO skills(name) VALUES (?)''', (skill_name))
+        '''INSERT INTO skills(name) VALUES (?)''', (skill_name,))
 
     return auto_increment_id
 
@@ -198,6 +198,17 @@ def add_skill_to_resume(resume_id: int, skill: Skill):
         '''INSERT INTO resumes_skills(resume_id, skill_id, stars) VALUES (?,?,?)''',
         (resume_id, skill.id, skill.stars))
 
+def main_resume_for_professional_exists(professional_id:int):
+    data = read_query('SELECT 1 from resumes where main = 1 and professional_id = ?', (professional_id,))
+
+    return any(data)
+
+def change_resume_main(professional_id:int):
+    update_query(
+        '''UPDATE resumes
+            SET main=0
+             WHERE professional_id = ? and main=1''',
+        (professional_id,))
 
 def not_exist_skill(professional_id: int, resume_id: int, skill: Skill):
     data = read_query(
