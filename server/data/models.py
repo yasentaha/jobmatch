@@ -230,7 +230,7 @@ class JobAd(BaseModel):
     status: str
     town_name: str  # if town_name not in towns, catch error
     views: str
-    skill_requirements: list[Skill]
+    # skill_requirements: list[Skill]
     # match_request_ids: list[int]
 
 
