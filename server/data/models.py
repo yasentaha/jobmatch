@@ -81,6 +81,13 @@ class Skill(BaseModel):
     id: int | None
     name: str
     stars: int  # not more than 5, not less than 1
+    
+    @classmethod
+    def from_query_result(cls, id, name, stars):
+        return cls(
+            id=id,
+            name=name,
+            stars=stars)
 
 
 class WorkPlace:
@@ -119,7 +126,20 @@ class Resume(BaseModel):
     work_place: str
     main: int
     status: str
-    town_id: int  # if town_name not in towns, catch error
+    town_name: str  # if town_name not in towns, catch error
+
+    @classmethod
+    def from_query_result(cls, id, title, description, min_salary, max_salary, work_place, main, status, town_name):
+        return cls(
+            id=id,
+            title=title,
+            description=description,
+            min_salary=min_salary,
+            max_salary=max_salary,
+            work_place=work_place,
+            main=main,
+            status=status,
+            town_name=town_name)
 
 
 class CreateResume(BaseModel):
