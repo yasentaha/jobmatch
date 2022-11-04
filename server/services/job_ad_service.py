@@ -1,10 +1,23 @@
 from server.data.database import read_query, update_query, insert_query, read_query_single_element
-from server.data.models import Company, JobAd, Status, Skill
+from server.data.models import Company, JobAd, Status, Skill, CreateJobAd
 
 
 
+def create_job_ad(company_id: int, create_job_ad: CreateJobAd, insert_data=None):
+    if insert_data is None:
+        insert_data = insert_query
 
-def get_job_ad_by_id(company_id:int, job_id: int):
+    town_id = get_town_id_by_name(create_job_ad.town_name)
+
+    generated_job_ad_id = insert_data(
+        '''INSERT INTO job_ads(title, description, min_salary, max_salary, work_place,status,town_name,company_id) 
+        values(?,?,?,?,?,?,?,?,?)''',
+        (create_job_ad.title, create_job_ad.description, create_job_ad.min_salary, create_job_ad.max_salary,
+         create_job_ad.work_place,create_job_ad.status, create_job_ad.town_name, company_id))
+
+    return get_job_ad_by_id(generated_job_ad_id)
+
+def get_job_ad_by_id(job_ad_id: int):
     
     data = read_query(
         '''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, j.work_place, j.status, j.views, t.name
@@ -12,7 +25,7 @@ def get_job_ad_by_id(company_id:int, job_id: int):
             job_ads AS j
         LEFT JOIN
             towns AS t ON j.town_id=t.id
-        WHERE company_id=? AND j.id=?''', (company_id, job_id))
+        WHERE j.id=?''', (job_ad_id,))
 
     return next((JobAd.from_query_result(*row) for row in data), None)
 
@@ -63,7 +76,7 @@ def update_job_ads_views(id: int):
 
     update_query('UPDATE job_ads SET views=? WHERE id=?', (updated_job_ads_view, id))
 
-def add_skills(skills: list[Skill]): 
+def add_skills(skills: list[Skill]): #add skill in DB
     for skill in skills:
         if not skill_exists(skill.name):
             add_skill(skill.name)
@@ -77,10 +90,10 @@ def return_skills_with_ids(skills: list[Skill]) -> list[Skill]:
     return skills_with_ids
 
 def add_skill(skill_name: str):
-    auto_increment_id = insert_query(
-        '''INSERT INTO skills(name) VALUES (?)''', (skill_name))
+    generated_id = insert_query(
+        '''INSERT INTO skills(name) VALUES (?)''', (skill_name,))
 
-    return auto_increment_id
+    return generated_id
 
 def skill_exists(skill_name:str) -> bool:
     skill_name = skill_name.lower()
@@ -98,6 +111,20 @@ def add_skill_to_job_ad(job_ad_id: int, skill: Skill):
     insert_query(
         '''INSERT INTO job_ads_skills(job_ad_id, skill_id, stars) VALUES (?,?,?)''',
         (job_ad_id, skill.id, skill.stars))
+
+def get_town_name_by_id(town_id: int):
+    data = read_query('''SELECT t.name
+    FROM towns as t
+    WHERE t.id=?''', (town_id,))[0]
+
+    return data
+
+
+def get_town_id_by_name(town_name: str) -> int:
+    town_id = (read_query_single_element('SELECT id from towns where name = ?', (town_name,)))[0]
+
+    return town_id
+
 
 def get_list_of_matches(id: int):
     ...
