@@ -20,14 +20,14 @@ class ResumeWithSkillsResponseModel(BaseModel):
     skills: list[Skill]
 
 
-resumes_router = APIRouter(prefix='/professionals_resumes')
+resumes_router = APIRouter(prefix='/resumes')
 
 
-@resumes_router.post('/{professional_id}/resumes')
-def create_resume(professional_id: int, create_resume: CreateResume, x_token: Header()):
+@resumes_router.post('/{id}/resumes')
+def create_resume(id: int, create_resume: CreateResume, x_token= Header()):
     user = get_user_or_raise_401(x_token)
 
-    if user.id != professional_id:
+    if user.id != id:
         return Unauthorized('Access denied, you do not have permission to access on this server!')
 
     if create_resume.skills:
@@ -37,14 +37,14 @@ def create_resume(professional_id: int, create_resume: CreateResume, x_token: He
 
     new_resume: CreateResume
 
-    new_resume = resume_service.create_resume(professional_id, create_resume)
+    new_resume = resume_service.create_resume(id, create_resume)
     [add_skill_to_resume(new_resume.id, skill) for skill in skills_with_ids]
 
     return Success(f'Resume with title {new_resume.title} was created!')
 
 
 @resumes_router.get('/{id}/resumes/{resume_id}')
-def edit_resume(professional_id: int, resume_id: int, resume: Resume, x_token: Header()):
+def edit_resume(professional_id: int, resume_id: int, resume: Resume, x_token= Header()):
     user = get_user_or_raise_401(x_token)
 
     if user.id == professional_id:
@@ -53,20 +53,20 @@ def edit_resume(professional_id: int, resume_id: int, resume: Resume, x_token: H
 
     return Unauthorized('Access denied, you do not have permission to edit this resume!')
 
-@resumes_router.get('/{id}/resumes/{resume_id}')
-def view_resume(professional_id: int, resume_id: int, x_token: Header()):
+@resumes_router.get('/{id}/resumes/{resume_id}/view')
+def view_resume(professional_id: int, resume_id: int, x_token= Header()):
     user = get_user_or_raise_401(x_token)
 
     if user:
         return ResumeWithSkillsResponseModel(
-            resune=get_resume_by_id(professional_id, resume_id),
+            resume=get_resume_by_id(professional_id, resume_id),
             skills=get_all_resume_skills_by_id(resume_id)
         )
 
     return Unauthorized('Please log in!')
 
 
-@resumes_router.get('/')
+@resumes_router.get('/{id}')
 def get_resumes(professional_id: int, x_token=Header()):
     user = get_user_or_raise_401(x_token)
 
