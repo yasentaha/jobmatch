@@ -2,11 +2,12 @@ from fastapi import APIRouter, Header
 from pydantic import BaseModel
 from server.common.auth import get_user_or_raise_401
 from server.common.responses import Forbidden, Unauthorized, Success
-from server.data.models import Resume, Skill, CreateResume
+from server.data.models import Resume, Skill, CreateResume, Role
 from server.routers import professionals
 from server.services import resume_service
 from server.services.resume_service import create_resume_and_add_skill, get_resume_by_id, get_all_resume_skills_by_id, \
-    edit_resume_by_professional_id_and_resume_id, add_skills, return_skills_with_ids, add_skill_to_resume
+    edit_resume_by_professional_id_and_resume_id, add_skills, return_skills_with_ids, add_skill_to_resume, \
+        main_resume_for_professional_exists, change_resume_main
 
 
 class ResumeResponseModel(BaseModel):
@@ -23,44 +24,49 @@ class ResumeWithSkillsResponseModel(BaseModel):
 resumes_router = APIRouter(prefix='/resumes')
 
 
-@resumes_router.post('/{id}/resumes')
-def create_resume(id: int, create_resume: CreateResume, x_token= Header()):
+@resumes_router.post('/')
+def create_resume(create_resume: CreateResume, x_token= Header()):
     user = get_user_or_raise_401(x_token)
 
-    if user.id != id:
+    if not user:
         return Unauthorized('Access denied, you do not have permission to access on this server!')
+
+    if user.role != Role.PROFESSIONAL:
+        return Forbidden('You do not have permission to create a resume!')
+
+    if create_resume.main and main_resume_for_professional_exists(user.id):
+        change_resume_main(user.id)
 
     if create_resume.skills:
         add_skills(create_resume.skills)
 
     skills_with_ids = return_skills_with_ids(create_resume.skills)
 
-    new_resume: CreateResume
-
-    new_resume = resume_service.create_resume(id, create_resume)
-    [add_skill_to_resume(new_resume.id, skill) for skill in skills_with_ids]
+    new_resume = resume_service.create_resume(user.id, create_resume)
+    if new_resume:
+        [add_skill_to_resume(new_resume.id, skill) for skill in skills_with_ids]
 
     return Success(f'Resume with title {new_resume.title} was created!')
 
 
-@resumes_router.get('/{id}/resumes/{resume_id}')
-def edit_resume(professional_id: int, resume_id: int, resume: Resume, x_token= Header()):
+@resumes_router.put('/{id}')
+def edit_resume(resume_id: int, resume: Resume, x_token= Header()):
     user = get_user_or_raise_401(x_token)
 
-    if user.id == professional_id:
-        edited_resume = edit_resume_by_professional_id_and_resume_id(professional_id, resume_id, resume)
+    if user:
+        edited_resume = edit_resume_by_professional_id_and_resume_id(user.id, resume_id, resume)
         return edited_resume
 
     return Unauthorized('Access denied, you do not have permission to edit this resume!')
 
-@resumes_router.get('/{id}/resumes/{resume_id}/view')
-def view_resume(professional_id: int, resume_id: int, x_token= Header()):
+@resumes_router.get('/{id}')
+def view_resume(id: int, x_token= Header()):
     user = get_user_or_raise_401(x_token)
 
     if user:
         return ResumeWithSkillsResponseModel(
-            resume=get_resume_by_id(professional_id, resume_id),
-            skills=get_all_resume_skills_by_id(resume_id)
+            resume=get_resume_by_id(id),
+            skills=get_all_resume_skills_by_id(id)
         )
 
     return Unauthorized('Please log in!')
