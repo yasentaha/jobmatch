@@ -229,7 +229,7 @@ class JobAd(BaseModel):
     work_place: str
     status: str
     town_name: str  # if town_name not in towns, catch error
-    views: str
+    views: int
     # skill_requirements: list[Skill]
     # match_request_ids: list[int]
 
@@ -337,3 +337,7 @@ class PersonalCompanyResponseModel(BaseModel):
     company: Company
     active_job_ads: int
     list_of_matches: list[int]
+
+class JobAdResponseModel(BaseModel):
+    resume: Resume
+    skills: list[Skill]
