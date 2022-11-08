@@ -100,6 +100,14 @@ def get_user_by_id(id:int, get_data_func = database.read_query) -> User | None:
 
     return next((User(id=id, user_name=user_name, password='', role=role) for id, user_name, password, role in data), None)
 
+def get_professional_fullname_by_id(professional_id:int) -> str:
+    full_name_tuple = read_query_single_element('''SELECT first_name, last_name
+                                            FROM professionals
+                                            where user_id=?''', (professional_id,))
+    full_name = full_name_tuple[0] + ' ' + full_name_tuple[1]
+
+    return full_name
+
 def edit_user_info(id: int, email:str, phone:str, address:str, town_id:int, update_data_func=database.update_query) -> int:
     try:
         edited_info = update_data_func('''
