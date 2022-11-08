@@ -188,7 +188,7 @@ CREATE TABLE `resumes` (
   KEY `fk_resumes_users1_idx` (`professional_id`),
   CONSTRAINT `fk_resumes_towns1` FOREIGN KEY (`town_id`) REFERENCES `towns` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_resumes_users1` FOREIGN KEY (`professional_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -197,7 +197,7 @@ CREATE TABLE `resumes` (
 
 LOCK TABLES `resumes` WRITE;
 /*!40000 ALTER TABLE `resumes` DISABLE KEYS */;
-INSERT INTO `resumes` VALUES (2,'Intermediate Python Developer','After a year of experience as a Junior Developer, I am seeking to further excell in the world of Python',2000,3000,'Remote',0,'Active',28,3),(3,'Junior Java Developer','Although proficient in Python, I love writing in Java and am looking for new job opportunities in the field',1800,2500,'Remote',1,'Active',28,3);
+INSERT INTO `resumes` VALUES (2,'Intermediate Python Developer','After a year of experience as a Junior Developer, I am seeking to further excell in the world of Python',2000,3000,'Remote',0,'Active',28,3),(3,'Junior Java Developer','Although proficient in Python, I love writing in Java and am looking for new job opportunities in the field',1800,2500,'Remote',1,'Active',28,3),(4,'Junior Python Developer','Just finished the Telerik Academy Python Alpha track, having worked on three team projects covering OOP, DSA, WEB and SQL',1800,2900,'Onsite',1,'Active',45,4),(5,'Junior Python Developer','I opted for a career-change and graduated from Telerik Academy on their Python Alpha Track.',2500,3900,'Hybrid',1,'Active',31,2);
 /*!40000 ALTER TABLE `resumes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -226,7 +226,7 @@ CREATE TABLE `resumes_skills` (
 
 LOCK TABLES `resumes_skills` WRITE;
 /*!40000 ALTER TABLE `resumes_skills` DISABLE KEYS */;
-INSERT INTO `resumes_skills` VALUES (2,1,5),(2,3,5),(3,4,4),(3,5,4);
+INSERT INTO `resumes_skills` VALUES (2,1,5),(2,3,5),(3,4,4),(3,5,4),(4,1,5),(4,2,4),(4,3,5),(5,1,5),(5,2,4),(5,3,5),(5,6,5),(5,7,4);
 /*!40000 ALTER TABLE `resumes_skills` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -241,7 +241,7 @@ CREATE TABLE `skills` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -250,7 +250,7 @@ CREATE TABLE `skills` (
 
 LOCK TABLES `skills` WRITE;
 /*!40000 ALTER TABLE `skills` DISABLE KEYS */;
-INSERT INTO `skills` VALUES (1,'python'),(2,'sql'),(3,'fastapi'),(4,'java'),(5,'Spring');
+INSERT INTO `skills` VALUES (1,'python'),(2,'sql'),(3,'fastapi'),(4,'java'),(5,'Spring'),(6,'Team Player'),(7,'JIRA');
 /*!40000 ALTER TABLE `skills` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -299,7 +299,7 @@ CREATE TABLE `users` (
   UNIQUE KEY `email_UNIQUE` (`email`),
   KEY `fk_users_towns1_idx` (`town_id`),
   CONSTRAINT `fk_users_towns1` FOREIGN KEY (`town_id`) REFERENCES `towns` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -321,4 +321,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-11-04 15:34:32
+-- Dump completed on 2022-11-08 13:59:31
