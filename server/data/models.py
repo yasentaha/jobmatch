@@ -91,17 +91,17 @@ class Skill(BaseModel):
 
 
 class WorkPlace:
-    REMOTE = 'remote'
-    ONSITE = 'onsite'
-    HYBRID = 'hybrid'
+    REMOTE = 'Remote'
+    ONSITE = 'Onsite'
+    HYBRID = 'Hybrid'
 
 
 class Status:
-    ACTIVE = 'active'
-    HIDDEN = 'hidden'
-    PRIVATE = 'private'
-    MATCHED = 'matched'
-    ARCHIVED = 'archived'
+    ACTIVE = 'Active'
+    HIDDEN = 'Hidden'
+    PRIVATE = 'Private'
+    MATCHED = 'Matched'
+    ARCHIVED = 'Archived'
 
 
 class ProfessionalRegisterData(BaseModel):
@@ -124,12 +124,12 @@ class Resume(BaseModel):
     min_salary: int
     max_salary: int
     work_place: str
-    main: int
+    main: bool
     status: str
     town_name: str  # if town_name not in towns, catch error
-
+    professional_id: int
     @classmethod
-    def from_query_result(cls, id, title, description, min_salary, max_salary, work_place, main, status, town_name):
+    def from_query_result(cls, id, title, description, min_salary, max_salary, work_place, main, status, town_name, professional_id):
         return cls(
             id=id,
             title=title,
@@ -139,7 +139,8 @@ class Resume(BaseModel):
             work_place=work_place,
             main=main,
             status=status,
-            town_name=town_name)
+            town_name=town_name,
+            professional_id = professional_id)
 
 
 class CreateResume(BaseModel):
