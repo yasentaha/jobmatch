@@ -108,6 +108,15 @@ def get_professional_fullname_by_id(professional_id:int) -> str:
 
     return full_name
 
+def get_company_name_by_id(company_id:int) -> str:
+    company_name_tuple = read_query_single_element('''SELECT company_name
+                                            FROM companies
+                                            where user_id=?''', (company_id,))
+
+    company_name = company_name_tuple[0]
+
+    return company_name
+
 def edit_user_info(id: int, email:str, phone:str, address:str, town_id:int, update_data_func=database.update_query) -> int:
     try:
         edited_info = update_data_func('''
