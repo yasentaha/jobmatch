@@ -231,12 +231,13 @@ class JobAd(BaseModel):
     status: str
     town_name: str  # if town_name not in towns, catch error
     views: int
+    company_id: int
     # skill_requirements: list[Skill]
     # match_request_ids: list[int]
 
 
     @classmethod
-    def from_query_result(cls, id, title, description, min_salary, max_salary, work_place, status, town_name, views):
+    def from_query_result(cls, id, title, description, min_salary, max_salary, work_place, status, town_name, company_id, views):
         return cls(
             id=id,
             title=title,
@@ -246,8 +247,8 @@ class JobAd(BaseModel):
             work_place=work_place,
             status=status,
             town_name=town_name,
-            views=views
-        )
+            company_id=company_id,
+            views=views)
 
 class CreateJobAd(BaseModel):
     id: int | None
@@ -258,7 +259,7 @@ class CreateJobAd(BaseModel):
     work_place: str
     status: str
     town_name: str  # if town_name not in towns, catch error
-    views:str
+    views:int | None
     skill_requirements: list[Skill]
 
 class MatchRequestResponse(BaseModel):
@@ -340,5 +341,6 @@ class PersonalCompanyResponseModel(BaseModel):
     list_of_matches: list[int]
 
 class JobAdResponseModel(BaseModel):
-    resume: Resume
-    skills: list[Skill]
+    company_name: str
+    job_ad: JobAd
+    skill_requirements: list[Skill]
