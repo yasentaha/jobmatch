@@ -4,6 +4,7 @@ from server.common.responses import BadRequest, Forbidden, NotFound, Success
 from server.data.models import LoginData, User, Contact, Company, Professional, CompanyInfo, ProfessionalInfo, CompanyRegisterData, ProfessionalRegisterData
 from server.data.models import ProfessionalResponse
 from server.services import user_service, professional_service, company_service
+from server.services import mailjet_service
 
 
 users_router = APIRouter(prefix='/users')
@@ -41,6 +42,8 @@ def register_professional(data: ProfessionalRegisterData,
     professional = professional_service.get_professional_by_id(user.id)
 
     if professional and professional.email == data.email:
+
+        # mailjet_service.send_registration_email(professional.email, professional.first_name)
 
         return Success(f'Professional account created for {data.first_name} {data.last_name}. Please log in to continue.')
     #else think if the above may not be successful, if yes, delete the row in users (rollback)
