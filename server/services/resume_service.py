@@ -15,6 +15,79 @@ def all_active_resumes_without_job_salary_and_description_by_id(id: int):
                    work_place=work_place, status=status, town_id=town_id, main=main)
             for id, title, description, min_salary, max_salary, work_place, status, town_id, main in data)
 
+def all_active(search: str | None = None, search_by: str | None = None, threshold: int | None = None):
+    
+    if search is None:
+    
+        data = read_query(
+        '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                    r.work_place, r.main, r.status, t.name, r.professional_id
+                    FROM resumes as r
+                    LEFT JOIN
+                    towns as t
+                    ON r.town_id = t.id
+                    WHERE r.status=?''', (Status.ACTIVE,))
+
+    else:
+        if search_by == 'salary_range':
+            if not threshold:
+                min_salary, max_salary = parse_salary_range(search)
+            else:
+                min_salary, max_salary = salary_range_threshold(parse_salary_range(search),int(threshold))
+            data = read_query(
+                '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                    r.work_place, r.main, r.status, t.name, r.professional_id
+                    FROM resumes as r
+                    LEFT JOIN
+                    towns as t
+                    ON r.town_id = t.id
+                    WHERE r.status=?
+                    AND r.min_salary >=?
+                    AND r.max_salary <=?''', (Status.ACTIVE, min_salary, max_salary))
+
+        elif search_by == 'location':
+            data = read_query('''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                                r.work_place, r.main, r.status, t.name, r.professional_id)
+                    FROM resumes as r
+                    LEFT JOIN
+                    towns as t
+                    ON r.town_id = t.id
+                    WHERE r.status='Active'
+                    AND t.name=?
+
+                    UNION
+                    
+                    SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                            r.work_place, r.main, r.status, t.name, r.professional_id
+                    FROM resumes as r
+                    LEFT JOIN
+                    towns as t
+                    ON r.town_id = t.id
+                    WHERE r.status='Active'
+                    AND r.work_place="Remote"''',(search,))
+
+    if not data:
+        return None
+
+    #OSTAVAT OSHTE PO TOWNS VIJ REMOTE
+    #PLUS PO SKILLS 
+
+    return (Resume.from_query_result(*row) for row in data)
+
+
+def parse_salary_range(salary_range:str):
+    #IN ROUTER VALIDATION
+    min_salary, max_salary = (int(min_max) for min_max in salary_range.split('-'))
+    return min_salary, max_salary
+
+def salary_range_threshold(salary_range:tuple, threshold=int):
+    min_salary, max_salary = salary_range
+    min_salary -= threshold
+    max_salary += threshold
+    return int(min_salary), int(max_salary)
+
+
+
 
 def all_hidden_resumes_by_id(id: int):
     data = read_query(
@@ -74,7 +147,8 @@ def create_resume_and_add_skill(professional_id: int, create_resume: CreateResum
 
 def get_resume_by_id(resume_id: int):
     data = read_query(
-        '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, r.work_place, r.main, r.status, t.name
+        '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                    r.work_place, r.main, r.status, t.name, r.professional_id
                     FROM resumes as r
                     LEFT JOIN
                     towns as t
@@ -170,6 +244,7 @@ def return_skills_with_ids(skills: list[Skill]) -> list[Skill]:
         skills_with_ids.append(skill)
 
     return skills_with_ids
+
 
 def add_skill(skill_name: str):
     auto_increment_id = insert_query(
