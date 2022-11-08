@@ -163,7 +163,7 @@ CREATE TABLE `professionals` (
 
 LOCK TABLES `professionals` WRITE;
 /*!40000 ALTER TABLE `professionals` DISABLE KEYS */;
-INSERT INTO `professionals` VALUES (1,'Jeff','Weiner','Creator of LinkedIn, Entrepreneur',0),(2,'Yasen','Taha','Junior Software Developer with Python',0),(3,'Krasimir','Bozhilov','Intermediate Software Developer with Python',1),(4,'Dimityr','Vasilev','Junior Software Developer',0),(5,'Nikolay','Likyov','Junior Software Developer',0),(6,'Rossitsa','Racheva','Senior Software Developer',0),(7,'Evgeni','Vladimirov','Full-Stack Software Developer and Physicist',0),(8,'Nikol','Bratkova','Full-Stack Software Developer',0),(9,'Nora','Andonova','Senior Software Develor with Python, Java',0),(10,'Anastasiya','Valtcheva','Senior Software Develor with Python - Jango, FastApi',0),(11,'Grigor','Mironov','Junior Software Develor',0),(12,'Irena','Ruseva','Intermediate Software Develor and QA',0),(13,'Ivaylo','Penchev','Intermediate Software Developer',0),(14,'Ivo','Georgiev','Intermediate Software Developer',0),(15,'Konstantin','Valtchanov','Intermediate Data Scientist',0),(16,'Maria','Kamenarova','Senior Data Engineer',0),(17,'Mitko','Bochev','Intermediate Data Engineer',0),(18,'Nikolay','Vedzhov','Software developer, Team Leader',0),(19,'Nikolay','Angelov','Software Architect',0),(20,'Nikolay','Radoslavov','Intermediate Data Scientist',0),(21,'Pavel','Petkov','Senior C# Developer',0),(22,'Plamen','Gunchev','Senior Python Developer',0),(23,'Stamen','Konarchev','Senior JavaScript Developer',0),(24,'Svetoslav','Doychinov','Senior C++ Developer',0),(25,'Valeria','Nikolaeva','Senior C++ Developer',0),(26,'Ventsislav','Kostadinov','Senior Data Engineer',0),(27,'Yavor','Chobanov','Intermediate Kotlin Developer',0),(28,'Edward','Evlogiev','Javascript, C#, Python Developer, Software Trainer',0),(29,'Vladimir','Venkov','Java, C#, Python Developer, Software Trainer',0),(30,'Radko','Stanev','Senior C# Developer, Software Trainer',0),(31,'Boyan','Hadjiev','International Relations Expert, Soft Skills Trainer',0);
+INSERT INTO `professionals` VALUES (1,'Jeff','Weiner','Creator of LinkedIn, Entrepreneur',0),(2,'Yasen','Taha','Junior Software Developer with Python',0),(3,'Krasimir','Bozhilov','Junior Python Developer',1),(4,'Dimityr','Vasilev','Junior Software Developer',0),(5,'Nikolay','Likyov','Junior Software Developer',0),(6,'Rossitsa','Racheva','Senior Software Developer',0),(7,'Evgeni','Vladimirov','Full-Stack Software Developer and Physicist',0),(8,'Nikol','Bratkova','Full-Stack Software Developer',0),(9,'Nora','Andonova','Senior Software Developer with Python, Java',0),(10,'Anastasiya','Valtcheva','Senior Software Developer with Python - Jango, FastApi',0),(11,'Grigor','Mironov','Junior Software Developer',0),(12,'Irena','Ruseva','Junior Python Developer',0),(13,'Ivaylo','Penchev','Junior Python Developer',0),(14,'Ivo','Georgiev','Intermediate Software Developer',0),(15,'Konstantin','Valtchanov','Intermediate Data Scientist',0),(16,'Maria','Kamenarova','Senior Data Engineer',0),(17,'Mitko','Bochev','Intermediate Data Engineer',0),(18,'Nikolay','Vedzhov','Software developer, Team Leader',0),(19,'Nikolay','Angelov','Junior Python Developer',0),(20,'Nikolay','Radoslavov','Intermediate Data Scientist',0),(21,'Pavel','Petkov','Senior C# Developer',0),(22,'Plamen','Gunchev','Senior Python Developer',0),(23,'Stamen','Konarchev','Senior JavaScript Developer',0),(24,'Svetoslav','Doychinov','Junior Python Developer',0),(25,'Valeria','Nikolaeva','Junior Python Developer',0),(26,'Ventsislav','Kostadinov','Senior Data Engineer',0),(27,'Yavor','Chobanov','Junior Python Developer',0),(28,'Edward','Evlogiev','Javascript, C#, Python Developer, Software Trainer',0),(29,'Vladimir','Venkov','Java, C#, Python Developer, Software Trainer',0),(30,'Radko','Stanev','Senior C# Developer, Software Trainer',0),(31,'Boyan','Hadjiev','International Relations Expert, Soft Skills Trainer',0);
 /*!40000 ALTER TABLE `professionals` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -190,7 +190,7 @@ CREATE TABLE `resumes` (
   KEY `fk_resumes_users1_idx` (`professional_id`),
   CONSTRAINT `fk_resumes_towns1` FOREIGN KEY (`town_id`) REFERENCES `towns` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_resumes_users1` FOREIGN KEY (`professional_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -199,7 +199,7 @@ CREATE TABLE `resumes` (
 
 LOCK TABLES `resumes` WRITE;
 /*!40000 ALTER TABLE `resumes` DISABLE KEYS */;
-INSERT INTO `resumes` VALUES (2,'Intermediate Python Developer','After a year of experience as a Junior Developer, I am seeking to further excell in the world of Python',2000,3000,'Remote',0,'Active',28,3),(3,'Junior Java Developer','Although proficient in Python, I love writing in Java and am looking for new job opportunities in the field',1800,2500,'Remote',1,'Active',28,3),(4,'Junior Python Developer','Just finished the Telerik Academy Python Alpha track, having worked on three team projects covering OOP, DSA, WEB and SQL',1800,2900,'Onsite',1,'Active',45,4),(5,'Junior Python Developer','I opted for a career-change and graduated from Telerik Academy on their Python Alpha Track.',2500,3900,'Hybrid',0,'Active',31,2),(6,'Junior Python Developer','I opted for a career-change and graduated from Telerik Academy on their Python Alpha Track.',2500,3900,'Hybrid',1,'Active',31,2);
+INSERT INTO `resumes` VALUES (2,'Intermediate Python Developer','After a year of experience as a Junior Developer, I am seeking to further excell in the world of Python',2000,3000,'Remote',0,'Active',28,3),(3,'Junior Java Developer','Although proficient in Python, I love writing in Java and am looking for new job opportunities in the field',1800,2500,'Remote',1,'Active',28,3),(4,'Junior Python Developer','Just finished the Telerik Academy Python Alpha track, having worked on three team projects covering OOP, DSA, WEB and SQL',1800,2900,'Onsite',1,'Active',45,4),(5,'Junior Python Developer','I opted for a career-change and graduated from Telerik Academy on their Python Alpha Track.',2500,3900,'Hybrid',0,'Active',31,2),(7,'Junior Software Developer','I opted for a career-change and graduated from Telerik Academy.',1800,2500,'Hybrid',0,'Active',28,5),(9,'Senior Software Developer','A deep understanding of all stages of digital development is as essential as an understanding of the part each developer plays and how it contributes to the end product.',5000,10000,'Remote',1,'Active',28,6),(10,'Full-Stack Software Developer','I can create application from its start to finish.',4000,8000,'Hybrid',1,'Active',28,7),(11,'Full-Stack Software Developer','I can create application from its start to finish.',5000,10000,'Hybrid',1,'Active',28,8),(12,'Senior Software Develor with Python, Java','I can do web development, for example: back-end development, software development, data science.',5000,10000,'Hybrid',1,'Active',28,9);
 /*!40000 ALTER TABLE `resumes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -228,7 +228,7 @@ CREATE TABLE `resumes_skills` (
 
 LOCK TABLES `resumes_skills` WRITE;
 /*!40000 ALTER TABLE `resumes_skills` DISABLE KEYS */;
-INSERT INTO `resumes_skills` VALUES (2,1,5),(2,3,5),(3,4,4),(3,5,4),(4,1,5),(4,2,4),(4,3,5),(5,1,5),(5,2,4),(5,3,5),(5,6,5),(5,7,4),(6,1,5),(6,2,4),(6,3,5),(6,6,5),(6,7,4);
+INSERT INTO `resumes_skills` VALUES (2,1,5),(2,3,5),(3,4,4),(3,5,4),(4,1,5),(4,2,4),(4,3,5),(5,1,5),(5,2,4),(5,3,5),(5,6,5),(5,7,4),(6,1,5),(6,2,4),(6,3,5),(6,6,5),(6,7,4),(7,1,5),(7,2,3),(7,3,4),(7,6,4),(7,17,4),(8,1,5),(8,2,5),(8,4,5),(8,17,5),(8,26,5),(9,1,5),(9,2,5),(9,4,5),(9,17,5),(9,26,5),(10,4,5),(10,20,5),(10,21,4),(10,22,4),(10,26,4),(11,20,5),(11,21,4),(11,22,4),(11,26,4),(11,34,4),(12,1,4),(12,3,4),(12,4,5),(12,5,4),(12,11,4);
 /*!40000 ALTER TABLE `resumes_skills` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -243,7 +243,7 @@ CREATE TABLE `skills` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -252,7 +252,7 @@ CREATE TABLE `skills` (
 
 LOCK TABLES `skills` WRITE;
 /*!40000 ALTER TABLE `skills` DISABLE KEYS */;
-INSERT INTO `skills` VALUES (1,'python'),(2,'sql'),(3,'fastapi'),(4,'java'),(5,'Spring'),(6,'Team Player'),(7,'JIRA'),(8,'OOP'),(9,'Unittest'),(10,'DSA'),(11,'Django'),(12,'Pandas'),(13,'ORM'),(14,'MongoDB'),(15,'Azure'),(16,'Scala'),(17,'GIT'),(18,'Docker'),(19,'.NET'),(20,'JavaScript'),(21,'HTML'),(22,'CSS'),(23,'Oracle'),(24,'Apache'),(25,'NodeJS'),(26,'C#'),(27,'Angular'),(28,'React'),(29,'AWS'),(30,'NoSQL'),(31,'Flask'),(32,'MariaDB'),(33,'Teaching skills');
+INSERT INTO `skills` VALUES (1,'python'),(2,'sql'),(3,'fastapi'),(4,'java'),(5,'Spring'),(6,'Team Player'),(7,'JIRA'),(8,'OOP'),(9,'Unittest'),(10,'DSA'),(11,'Django'),(12,'Pandas'),(13,'ORM'),(14,'MongoDB'),(15,'Azure'),(16,'Scala'),(17,'GIT'),(18,'Docker'),(19,'.NET'),(20,'JavaScript'),(21,'HTML'),(22,'CSS'),(23,'Oracle'),(24,'Apache'),(25,'NodeJS'),(26,'C#'),(27,'Angular'),(28,'React'),(29,'AWS'),(30,'NoSQL'),(31,'Flask'),(32,'MariaDB'),(33,'Teaching skills'),(34,'C++');
 /*!40000 ALTER TABLE `skills` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -323,4 +323,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-11-08 20:36:56
+-- Dump completed on 2022-11-08 22:06:58
