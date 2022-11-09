@@ -74,11 +74,11 @@ def view_resume(id: int, x_token= Header()):
     return Unauthorized('Please log in!')
 
 @resumes_router.get('/')
-def get_resumes(search: str | None = None, search_by: str | None = None, threshold: int | None = None,x_token=Header()):
+def get_resumes(search: str | None = None, search_by: str | None = None, threshold: int | None = None,combined: bool | None = None,x_token=Header()):
     user = get_user_or_raise_401(x_token)
 
     if user:
-        resumes = resume_service.all_active(search, search_by, threshold)
+        resumes = resume_service.all_active(search, search_by, threshold, combined)
     else:
         return Forbidden('Please log in!')
     resumes_full = [ResumeWithSkillsResponseModel(full_name=get_professional_fullname_by_id(resume.professional_id), 
