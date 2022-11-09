@@ -15,7 +15,7 @@ def all_active_resumes_without_job_salary_and_description_by_id(id: int):
                    work_place=work_place, status=status, town_id=town_id, main=main)
             for id, title, description, min_salary, max_salary, work_place, status, town_id, main in data)
 
-def all_active(search: str | None = None, search_by: str | None = None, threshold: int | None = None):
+def all_active(search: str | None = None, search_by: str | None = None, threshold: int | None = None, combined: bool | None = None):
     
     if search is None:
     
@@ -47,7 +47,7 @@ def all_active(search: str | None = None, search_by: str | None = None, threshol
 
         elif search_by == 'location':
             data = read_query('''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
-                                r.work_place, r.main, r.status, t.name, r.professional_id)
+                                r.work_place, r.main, r.status, t.name, r.professional_id
                     FROM resumes as r
                     LEFT JOIN
                     towns as t
@@ -65,6 +65,25 @@ def all_active(search: str | None = None, search_by: str | None = None, threshol
                     ON r.town_id = t.id
                     WHERE r.status='Active'
                     AND r.work_place="Remote"''',(search,))
+        
+        elif search_by == 'skills_multiple':
+            if combined == True:
+                skills_tuple = parse_skills(search)
+                data = read_query('''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                            r.work_place, r.main, r.status, t.name, r.professional_id
+                                FROM
+                                    resumes AS r
+                                        LEFT JOIN
+                                    towns AS t ON r.town_id = t.id
+                                        LEFT JOIN
+                                    resumes_skills AS r_s ON r.id = r_s.resume_id
+                                        LEFT JOIN
+                                    skills AS s ON r_s.skill_id = s.id
+                                WHERE
+                                    r.status = 'Active'
+                                        AND s.name IN ?
+                                        GROUP by r.id
+                                        HAVING count(distinct s.name) = ?''',(f"({convert_tuple_to_string(skills_tuple)})",len(skills_tuple)))
 
     if not data:
         return None
@@ -86,8 +105,29 @@ def salary_range_threshold(salary_range:tuple, threshold=int):
     max_salary += threshold
     return int(min_salary), int(max_salary)
 
+def parse_skills(skills:str) -> tuple:
+    parsed_skills = tuple(remove_under_from_skill(skill) for skill in skills.split(','))
 
+    return parsed_skills
 
+def remove_under_from_skill(skill:str):
+    if '_' in skill:
+        str_list = skill.split('_')
+        new_skil = ' '.join(str_list)
+
+        return new_skil
+    else:
+        return skill
+
+def convert_tuple_to_string(some_tuple:tuple):
+    string = ''
+    for i in range(len(some_tuple)):
+        if i == len(some_tuple) - 1:
+            string += f"'{some_tuple[i]}'"
+        else:
+            string += f"'{some_tuple[i]}', "
+
+    return string
 
 def all_hidden_resumes_by_id(id: int):
     data = read_query(
