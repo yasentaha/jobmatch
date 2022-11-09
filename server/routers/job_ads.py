@@ -36,14 +36,19 @@ def create_resume(create_job_ad: CreateJobAd, x_token= Header()):
 @job_ads_router.get('/{id}')
 def get_job_ad(id: int, x_token= Header()):
     user = get_user_or_raise_401(x_token)
-
-    if user:
-        return JobAdResponseModel(
-            company_name=get_company_name_by_id(id),
-            job_ad=get_job_ad_by_id(id),
+    job_ad = get_job_ad_by_id(id)
+    
+    if not user:
+        return Unauthorized('Please log in!')
+    
+    if not job_ad:
+        return NotFound(f'Job ad with given ID: {id} does not exist!')
+        
+    return JobAdResponseModel(
+            company_name=get_company_name_by_id(job_ad.company_id),
+            job_ad=job_ad,
             skill_requirements=get_all_skills_for_job_ad_id(id))
 
-    return Unauthorized('Please log in!')
 
 @job_ads_router.get('/')
 def get_job_ads(search: str | None = None, search_by: str | None = None, threshold: int | None = None,x_token=Header()):
