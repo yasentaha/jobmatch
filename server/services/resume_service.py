@@ -69,7 +69,7 @@ def all_active(search: str | None = None, search_by: str | None = None, threshol
         elif search_by == 'skills_multiple':
             if combined == True:
                 skills_tuple = parse_skills(search)
-                data = read_query('''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                data = read_query(f'''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
                             r.work_place, r.main, r.status, t.name, r.professional_id
                                 FROM
                                     resumes AS r
@@ -80,10 +80,10 @@ def all_active(search: str | None = None, search_by: str | None = None, threshol
                                         LEFT JOIN
                                     skills AS s ON r_s.skill_id = s.id
                                 WHERE
-                                    r.status = 'Active'
-                                        AND s.name IN ?
+                                    r.status = "Active"
+                                        AND s.name IN {skills_tuple}
                                         GROUP by r.id
-                                        HAVING count(distinct s.name) = ?''',(f"({convert_tuple_to_string(skills_tuple)})",len(skills_tuple)))
+                                        HAVING count(distinct s.name) = {len(skills_tuple)}''')
 
     if not data:
         return None
