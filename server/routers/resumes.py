@@ -91,7 +91,7 @@ def get_resumes(professional_id: int, x_token=Header()):
     user = get_user_or_raise_401(x_token)
 
     if user:
-        resumes = resume_service.all_active_resumes_without_job_salary_and_description_by_id(professional_id)
+        resumes = resume_service.all_active_resumes_without_job_salary_and_description_by_professional_id(professional_id)
     else:
         return Forbidden('Please log in!')
 
