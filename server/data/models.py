@@ -264,10 +264,15 @@ class CreateJobAd(BaseModel):
 
 class MatchRequestResponse(BaseModel):
     id: int
-    resume_id: Resume  # MOJEM LI DA GO NAPRAVIM EDNO DO DRUGO
+    request_from: str #Name
+    resume_id: Resume
     job_ad_id: JobAd
-    match: int
-    request_from: str
+
+class MatchRequest(BaseModel):
+    id: int
+    resume_id: Resume
+    job_ad_id: JobAd
+    requestor_id: int
 
 
 class Town(BaseModel):
@@ -344,3 +349,34 @@ class JobAdResponseModel(BaseModel):
     company_name: str
     job_ad: JobAd
     skill_requirements: list[Skill]
+
+class ResumeWithoutDescriptionAndSalary(BaseModel):
+    id: int | None
+    title: str
+    work_place: str
+    status: str
+    town_name: str
+    professional_id: int
+    @classmethod
+    def from_query_result(cls, id, title, work_place, status, town_name, professional_id):
+        return cls(
+            id=id,
+            title=title,
+            work_place=work_place,
+            status=status,
+            town_name=town_name,
+            professional_id = professional_id)
+
+class ResumeWithSkillsResponseModel(BaseModel):
+    full_name: str 
+    resume: Resume
+    skills: list[Skill]
+
+class ResumeWithoutDescriptionAndSalaryResponse(BaseModel):
+    full_name: str 
+    resume: ResumeWithoutDescriptionAndSalary
+
+class ResumeResponseModel(BaseModel):
+    resume: Resume
+    skills: list[Skill]
+    match_request_ids: list[int]
