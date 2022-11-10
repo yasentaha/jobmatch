@@ -1,19 +1,32 @@
 from sqlite3 import OperationalError
 from server.common.responses import Success, BadRequest, NotFound
 from server.data.database import read_query, insert_query, update_query, read_query_single_element
-from server.data.models import Resume, Status, Skill, CreateResume, Role, JobAd, MatchRequestResponse
+from server.data.models import Resume, Status, Skill, CreateResume, Role, JobAd, MatchRequestResponse, ResumeWithoutDescriptionAndSalary
 from server.services.professional_service import get_professional_by_id
 
 
-def all_active_resumes_without_job_salary_and_description_by_id(id: int):
-    data = read_query(
-        '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, r.work_place, r.status, r.town_id,r.main 
-                FROM resumes as r
-                WHERE r.professional_id=? AND r.status=?''', (id, f'%{Status.ACTIVE}%'))
+# def all_active_resumes_without_job_salary_and_description_by_id(id: int):
+#     data = read_query(
+#         '''SELECT r.id, r.title, r.work_place, r.status, r.town_id
+#                 FROM resumes as r
+#                 WHERE r.professional_id=? AND r.status=?''', (id, f'%{Status.ACTIVE}%'))
 
-    return (Resume(id=id, title=title, description='None', min_salary=0, max_salary=0,
-                   work_place=work_place, status=status, town_id=town_id, main=main)
-            for id, title, description, min_salary, max_salary, work_place, status, town_id, main in data)
+#     return (Resume(id=id, title=title, description='None', min_salary=0, max_salary=0,
+#                    work_place=work_place, status=status, town_id=town_id, main=main)
+#             for id, title, description, min_salary, max_salary, work_place, status, town_id, main in data)
+
+def all_active_resumes_without_job_salary_and_description_by_professional_id(professional_id: int):
+    data = read_query(
+        '''SELECT r.id, r.title, r.work_place, r.status, t.name, r.professional_id
+                    FROM resumes as r
+                    LEFT JOIN
+                    towns as t
+                    ON r.town_id = t.id
+                    WHERE r.professional_id=? AND r.status=?''', (professional_id, Status.ACTIVE))
+    if data:
+        return (ResumeWithoutDescriptionAndSalary.from_query_result(*row) for row in data)
+    else:
+        return None
 
 def all_active(search: str | None = None, search_by: str | None = None, threshold: int | None = None, combined: bool | None = None):
     
@@ -53,7 +66,7 @@ def all_active(search: str | None = None, search_by: str | None = None, threshol
                     towns as t
                     ON r.town_id = t.id
                     WHERE r.status='Active'
-                    AND t.name=?
+                    AND t.name LIKE ?
 
                     UNION
                     
@@ -64,11 +77,11 @@ def all_active(search: str | None = None, search_by: str | None = None, threshol
                     towns as t
                     ON r.town_id = t.id
                     WHERE r.status='Active'
-                    AND r.work_place="Remote"''',(search,))
+                    AND r.work_place="Remote"''',(f'%{search}%',))
         
-        elif search_by == 'skills_multiple':
+        elif search_by == 'skills':
+            skills_tuple = parse_skills(search)
             if combined == True:
-                skills_tuple = parse_skills(search)
                 data = read_query(f'''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
                             r.work_place, r.main, r.status, t.name, r.professional_id
                                 FROM
@@ -84,6 +97,20 @@ def all_active(search: str | None = None, search_by: str | None = None, threshol
                                         AND s.name IN {skills_tuple}
                                         GROUP by r.id
                                         HAVING count(distinct s.name) = {len(skills_tuple)}''')
+            else:
+                data = read_query(f'''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                            r.work_place, r.main, r.status, t.name, r.professional_id
+                                FROM
+                                    resumes AS r
+                                        LEFT JOIN
+                                    towns AS t ON r.town_id = t.id
+                                        LEFT JOIN
+                                    resumes_skills AS r_s ON r.id = r_s.resume_id
+                                        LEFT JOIN
+                                    skills AS s ON r_s.skill_id = s.id
+                                WHERE
+                                    r.status = 'Active'
+                                        AND s.name IN {skills_tuple}''')
 
     if not data:
         return None
@@ -119,15 +146,11 @@ def remove_under_from_skill(skill:str):
     else:
         return skill
 
-def convert_tuple_to_string(some_tuple:tuple):
-    string = ''
-    for i in range(len(some_tuple)):
-        if i == len(some_tuple) - 1:
-            string += f"'{some_tuple[i]}'"
-        else:
-            string += f"'{some_tuple[i]}', "
+def validate_stars(skills: list[Skill]):
+    for skill in skills:
+        if not 1 <= skill.stars <= 5:
+            return None
 
-    return string
 
 def all_hidden_resumes_by_id(id: int):
     data = read_query(
@@ -193,7 +216,8 @@ def get_resume_by_id(resume_id: int):
                     LEFT JOIN
                     towns as t
                     ON r.town_id = t.id
-                    WHERE r.id=?''', (resume_id,))
+                    WHERE r.id=?
+                    AND r.status != ?''', (resume_id, Status.HIDDEN))
 
     return next((Resume.from_query_result(*row) for row in data), None)
 
@@ -218,13 +242,18 @@ def edit_resume_by_professional_id_and_resume_id(professional_id: int, resume_id
 
 def get_all_active_resumes_by_professional_id(professional_id: int):
     data = read_query(
-        '''SELECT r.id
+        '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                    r.work_place, r.main, r.status, t.name, r.professional_id
                     FROM resumes as r
-                    WHERE r.professional_id=? AND r.status=?''', (professional_id, f'%{Status.ACTIVE}%'))
+                    LEFT JOIN
+                    towns as t
+                    ON r.town_id = t.id
+                    WHERE r.professional_id=? AND r.status=?''', (professional_id, Status.ACTIVE))
     if data:
-        return (id for id in data)
+        return (Resume.from_query_result(*row) for row in data)
     else:
-        return [0]
+        return None
+
 
 
 def get_all_archived_resumes_by_professional_id(professional_id: int):
