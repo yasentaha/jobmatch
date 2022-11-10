@@ -2,8 +2,8 @@ from fastapi import APIRouter, Header
 from pydantic import BaseModel
 from server.common.auth import get_user_or_raise_401
 from server.common.responses import NotFound, Forbidden, Unauthorized, Success, BadRequest
-from server.data.models import Professional, Resume, ProfessionalInfo
-from server.services import professional_service, resume_service
+from server.data.models import Professional, Resume, ProfessionalInfo, ResumeWithSkillsResponseModel, Role, ResumeWithoutDescriptionAndSalary, ResumeWithoutDescriptionAndSalaryResponse
+from server.services import professional_service, resume_service, user_service
 from server.services.professional_service import edit_professional_info, get_professional_info_by_id, edit_professional, get_professional_by_id
 from server.services.user_service import edit_user_info, get_town_id_by_name, valid_email
 
@@ -106,3 +106,23 @@ def edit_professional_by_id(id: int, professional: Professional, x_token: str = 
         return Success(f'Successfully updated info for professional with name {professional.first_name} {professional.last_name}!')
     else:
         return BadRequest(error_msg)
+
+@professionals_router.get('/{id}/resumes')
+def professional_by_id(id: int, x_token: str = Header()):
+    user = get_user_or_raise_401(x_token)
+
+    if user:
+        if user.role == Role.COMPANY:
+            resumes = resume_service.get_all_active_resumes_by_professional_id(id)
+            resumes_full = [ResumeWithSkillsResponseModel(full_name=user_service.get_professional_fullname_by_id(resume.professional_id), 
+                resume=resume, 
+                skills=resume_service.get_all_resume_skills_by_id(resume.id)) for resume in resumes]
+            return resumes_full
+        
+        elif user.role == Role.PROFESSIONAL:
+            resumes = resume_service.all_active_resumes_without_job_salary_and_description_by_professional_id(id)
+            resumes_full = [ResumeWithoutDescriptionAndSalaryResponse(full_name=user_service.get_professional_fullname_by_id(resume.professional_id), 
+                resume=resume) for resume in resumes]
+            return resumes_full
+    else:
+        return Forbidden('Please log in!')
