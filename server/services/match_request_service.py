@@ -2,7 +2,62 @@ from server.services.user_service import get_user_by_id
 from server.data.models import MatchRequest, MatchRequestResponse
 from server.data.database import insert_query, read_query, read_query_single_element, update_query
 
+#LEFT TO DO:
 
+'''
+IGNORE ORDER
+1) SEARCH FOR RESUMES BY JOB AD
+- could be added to the already existing search where search by: job_ad_id!!!
+- method that gets job_ad by id
+- method that gets all active resumes by LOCATION and REMOTE
+- compare salary range and requirements of JOB AD to the salary ranges and skills in of RESUMES from above DATA
+
+2) SEARCH FOR JOB ADS BY RESUMES
+- SAME LIKE ABOVE BUT OTHER WAY ROUND
+
+3) INITIATE MATCH REQUEST BY COMPANY
+- POST .../resumes/id - requestor_id is the user.id from token, resume_id is from url, job_ad_id could be body, could be query param
+- VALIDATE if user is a company if not, Forbidden
+- VALIDATE if match_request between same two resume and job ad exists (match_request_by_combined_key)
+- if not initiatie_match_request()
+    - Send email to Professional
+    - Return Success
+- if yes and get_user_by_id(requestor_id).role = company, return YOU ALREADY SENT A REQUEST
+- if yes and get_user_by_id(requestor_id).role = company INSTANT MATCH
+    - its_a_match()
+    - delete_match_request
+    - update professional to busy
+    - archive resume and job_ad....
+
+4) INITIATE MATCH REQUEST BY PROFESSIONAL
+SAME AS ABOVE BUT VICE VERSA ALSO DELETE ALL MATCH REQUESTS FOR PROFESSIONAL??? SEND REJECTION EMAILS???
+
+5) VIEW MATCH REQUESTS FOR PROFESSIONAL
+- GET .../professionals/id/match_requests
+- Get a list of:
+    ProfessionalMatchRequestResponse
+    Company Name / Id
+    Job Ad - Full
+    Resume - Full
+COULD BE OTHER RESPONSE MODEL WHERE SALARY RANGE EDNO POD DRUGO AND SKILLS REQUIREMENTS EDNO POD DRUGO??? AMA PO DOBRE NE???
+
+6) VIEW MATCH REQUESTS FOR COMPANY
+- GET .../companies/id/match_requests
+    CompanyMatchRequestResponse
+    Professional Name / Id
+    Resume - full
+    Job Ad - Title / Id / Full
+
+7) REJECT MATCH REQUEST BY PROFESSIONAL
+- DELETE .../professionals/id/match_requests (either /id, or query param???)
+- match_request = get_match_request_by_id(id)
+- job_ad = get_job_ad_by_id(match_request.job_ad_id)
+- company = get_company_by_id(job_ad.company_id) SAME FOR PROFESSIONAL
+- delete_match_request()
+- send rejection email to company.email - Your match request for (job_ad.title) was rejected by (professional.name)
+
+
+'''
 
 def initiate_match_request(requestor_id:int, resume_id:int, job_ad_id:int ,insert_data_func=insert_query):
     generated_id = insert_data_func(
