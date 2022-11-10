@@ -1,26 +1,14 @@
 from fastapi import APIRouter, Header
 from pydantic import BaseModel
 from server.common.auth import get_user_or_raise_401
-from server.common.responses import Forbidden, Unauthorized, Success
-from server.data.models import Resume, Skill, CreateResume, Role
+from server.common.responses import Forbidden, Unauthorized, Success, BadRequest, NotFound
+from server.data.models import Resume, Skill, CreateResume, Role, ResumeResponseModel, ResumeWithSkillsResponseModel
 from server.routers import professionals
 from server.services import resume_service, user_service
 from server.services.resume_service import create_resume_and_add_skill, get_resume_by_id, get_all_resume_skills_by_id, \
     edit_resume_by_professional_id_and_resume_id, add_skills, return_skills_with_ids, add_skill_to_resume, \
-        main_resume_for_professional_exists, change_resume_main
+        main_resume_for_professional_exists, change_resume_main, validate_stars
 from server.services.user_service import get_professional_fullname_by_id
-
-
-class ResumeResponseModel(BaseModel):
-    resume: Resume
-    skills: list[Skill]
-    match_request_ids: list[int]
-
-
-class ResumeWithSkillsResponseModel(BaseModel):
-    full_name: str 
-    resume: Resume
-    skills: list[Skill]
 
 
 resumes_router = APIRouter(prefix='/resumes')
@@ -40,6 +28,9 @@ def create_resume(create_resume: CreateResume, x_token= Header()):
         change_resume_main(user.id)
 
     if create_resume.skills:
+        if not validate_stars(create_resume.skills):
+            return BadRequest('Stars for skills need to be between 1 and 5')
+
         add_skills(create_resume.skills)
 
     skills_with_ids = return_skills_with_ids(create_resume.skills)
@@ -66,10 +57,13 @@ def view_resume(id: int, x_token= Header()):
     user = get_user_or_raise_401(x_token)
 
     if user:
-        return ResumeWithSkillsResponseModel(
-            resume=get_resume_by_id(id),
-            skills=get_all_resume_skills_by_id(id)
-        )
+        resume=get_resume_by_id(id)
+        if not resume:
+            return NotFound(f'Resume with ID {id} does not exist or is hidden.')
+
+        return ResumeWithSkillsResponseModel(full_name=get_professional_fullname_by_id(resume.professional_id), 
+                resume=resume, 
+                skills=get_all_resume_skills_by_id(resume.id))
 
     return Unauthorized('Please log in!')
 
@@ -77,10 +71,16 @@ def view_resume(id: int, x_token= Header()):
 def get_resumes(search: str | None = None, search_by: str | None = None, threshold: int | None = None,combined: bool | None = None,x_token=Header()):
     user = get_user_or_raise_401(x_token)
 
+    search_validation = ['salary_range', 'location', 'skills']
+
+    if search_by and search_by not in search_validation:
+        return BadRequest(f'Cannot search by parameter {search_by}.')
+
     if user:
         resumes = resume_service.all_active(search, search_by, threshold, combined)
     else:
         return Forbidden('Please log in!')
+
     resumes_full = [ResumeWithSkillsResponseModel(full_name=get_professional_fullname_by_id(resume.professional_id), 
                 resume=resume, 
                 skills=get_all_resume_skills_by_id(resume.id)) for resume in resumes]
@@ -108,3 +108,29 @@ def get_resumes(professional_id: int, x_token=Header()):
         return Unauthorized('Access denied, you do not have permission to access on this server!')
 
     return resumes
+
+
+'''
+- resumes/id da mu dadesh match request
+- companies/id --//--
+- 
+
+
+professionals/id/match_requests
+MNOOGO PO TOVA:
+ProfessionalMatchRequestResponse
+Company Name / Id
+Job Ad - full
+Resume - Title / Id / Full
+
+REJECT???????????????? AUTOMATIC FOR PROFESSIONAL WHEN MATCH WITH OTHERS
+MANUAL FOR BOTH PROFESSIONAL COMPANY WHEN YOU WANT TO REJECT
+
+companies/id/match_requests
+CompanyMatchRequestResponse
+Professional Name / Id
+Resume - full
+Job Ad - Title / Id / Full
+
+
+'''
