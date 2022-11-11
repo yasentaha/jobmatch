@@ -6,28 +6,13 @@ from server.data.database import insert_query, read_query, read_query_single_ele
 
 '''
 IGNORE ORDER
-1) SEARCH FOR RESUMES BY JOB AD
-- could be added to the already existing search where search by: job_ad_id!!!
-- method that gets job_ad by id
-- method that gets all active resumes by LOCATION and REMOTE
-- compare salary range and requirements of JOB AD to the salary ranges and skills in of RESUMES from above DATA
+
+ONSITE JOB AD - everone who is ONSITE and TOWN
+REMOTE JOB AD - everyone who is REMOTE and HYBRID (NO MATTER TOWN)
+HYBRID JOB AD - everyone except onsite from other town
 
 2) SEARCH FOR JOB ADS BY RESUMES
 - SAME LIKE ABOVE BUT OTHER WAY ROUND
-
-3) INITIATE MATCH REQUEST BY COMPANY
-- POST .../resumes/id - requestor_id is the user.id from token, resume_id is from url, job_ad_id could be body, could be query param
-- VALIDATE if user is a company if not, Forbidden
-- VALIDATE if match_request between same two resume and job ad exists (match_request_by_combined_key)
-- if not initiatie_match_request()
-    - Send email to Professional
-    - Return Success
-- if yes and get_user_by_id(requestor_id).role = company, return YOU ALREADY SENT A REQUEST
-- if yes and get_user_by_id(requestor_id).role = company INSTANT MATCH
-    - its_a_match()
-    - delete_match_request
-    - update professional to busy
-    - archive resume and job_ad....
 
 4) INITIATE MATCH REQUEST BY PROFESSIONAL
 SAME AS ABOVE BUT VICE VERSA ALSO DELETE ALL MATCH REQUESTS FOR PROFESSIONAL??? SEND REJECTION EMAILS???
