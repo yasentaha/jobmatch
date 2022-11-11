@@ -263,27 +263,29 @@ def get_resume_by_id(resume_id: int) -> Resume:
     return resume
 
 
-def edit_resume_by_professional_id_and_resume_id(professional_id: int, resume_id: int, resume: Resume,
+def edit_resume_by_professional_id_and_resume_id(professional_id: int, resume_id: int, new_resume: Resume,
                                                  update_data=None):
     if update_data is None:
         update_data = update_query
 
-    town_id = get_town_id_by_name(resume.town_name)
+    town_id = get_town_id_by_name(new_resume.town_name)
 
     update_data(
         '''UPDATE resumes
             SET title=?, description=?, min_salary=?, max_salary=?,work_place=?,status=?,town_id=?,main=?
              WHERE professional_id = ? AND resumes.id=?''',
-        (resume.title, resume.description, resume.min_salary, resume.max_salary, resume.work_place,
-         resume.status, town_id, resume.main, professional_id, resume_id))
+        (new_resume.title, new_resume.description, new_resume.min_salary, new_resume.max_salary, new_resume.work_place,
+         new_resume.status, town_id, new_resume.main, professional_id, resume_id))
 
-    #remove skills
-    #add skills
+    old_resume_skills = get_all_resume_skills_by_id(resume_id)
 
-    return Resume(id=update_data.id, title=update_data.title, description=update_data.description,
-                  min_salary=update_data.min_salary, max_salary=update_data.max_salary,
-                  work_place=update_data.work_place, status=update_data.status,
-                  town_id=update_data.town_id, main=update_data.main)
+    new_resume_skills = return_skills_with_ids(new_resume.skills)
+
+    if new_resume_skills != old_resume_skills:
+        delete_all_skills_from_resume(resume_id)
+        [add_skill_to_resume(resume_id, skill)  for skill in new_resume_skills]
+
+    return get_resume_by_id(resume_id)
 
 
 def get_all_active_resumes_by_professional_id(professional_id: int):
@@ -388,17 +390,10 @@ def add_skill_to_resume(resume_id: int, skill: Skill):
         '''INSERT INTO resumes_skills(resume_id, skill_id, stars) VALUES (?,?,?)''',
         (resume_id, skill.id, skill.stars))
 
-def delete_skill_from_resume(resume_id:int):
+def delete_all_skills_from_resume(resume_id:int):
 
     update_query('''DELETE from resumes_skills where resume_id = ?''', (resume_id,))
 
-# def update_skills(old_resume_skills: list[Skill], new_resume_skills: list[Skill]):
-#     for skill in old_resume_skills:
-#         if skill.id not in new_resume_skills:
-#             pass
-#             #delete skills
-#         else:
-#             if skill
 
 def main_resume_for_professional_exists(professional_id:int):
     data = read_query('SELECT 1 from resumes where main = 1 and professional_id = ?', (professional_id,))
