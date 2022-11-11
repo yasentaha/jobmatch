@@ -43,7 +43,7 @@ def create_resume(resume: Resume, x_token= Header()):
     return Success(f'Resume with title {new_resume.title} was created!')
 
 
-@resumes_router.put('/{id}')
+@resumes_router.put('/{resume_id}')
 def edit_resume(resume_id: int, resume: Resume, x_token= Header()):
     user = get_user_or_raise_401(x_token)
     
