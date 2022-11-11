@@ -3,8 +3,7 @@ from pydantic import BaseModel
 from server.common.auth import get_user_or_raise_401
 from server.common.responses import Forbidden, Unauthorized, Success, BadRequest, NotFound
 from server.data.models import Resume, Skill, CreateResume, Role, ResumeResponseModel, ResumeWithSkillsResponseModel
-from server.routers import professionals
-from server.services import resume_service, user_service
+from server.services import resume_service, user_service, job_ad_service, match_request_service, professional_service, company_service
 from server.services.resume_service import create_resume_and_add_skill, get_resume_by_id, get_all_resume_skills_by_id, \
     edit_resume_by_professional_id_and_resume_id, add_skills, return_skills_with_ids, add_skill_to_resume, \
         main_resume_for_professional_exists, change_resume_main, validate_stars
@@ -64,7 +63,9 @@ def edit_resume(resume_id: int, resume: Resume, x_token= Header()):
 
 
     edited_resume = edit_resume_by_professional_id_and_resume_id(user.id, resume_id, resume)
-    return edited_resume
+    if edited_resume:
+        return ResumeResponseModel(full_name=get_professional_fullname_by_id(edit_resume.professional_id), 
+                resume=edit_resume)
 
 
 @resumes_router.get('/{id}')
@@ -85,7 +86,7 @@ def view_resume(id: int, x_token= Header()):
 def get_resumes(search: str | None = None, search_by: str | None = None, threshold: int | None = None,combined: bool | None = None,x_token=Header()):
     user = get_user_or_raise_401(x_token)
 
-    search_validation = ['salary_range', 'location', 'skills']
+    search_validation = ['salary_range', 'location', 'skills', 'job_ad']
 
     if search_by and search_by not in search_validation:
         return BadRequest(f'Cannot search by parameter {search_by}.')
@@ -95,10 +96,13 @@ def get_resumes(search: str | None = None, search_by: str | None = None, thresho
     else:
         return Forbidden('Please log in!')
 
-    resumes_full = [ResumeWithSkillsResponseModel(full_name=get_professional_fullname_by_id(resume.professional_id), 
-                resume=resume, 
-                skills=get_all_resume_skills_by_id(resume.id)) for resume in resumes]
-    return resumes_full
+    if not resumes:
+        return NotFound('No resumes match your search.')
+
+    resumes_response = [ResumeResponseModel(full_name=get_professional_fullname_by_id(resume.professional_id), 
+                resume=resume) for resume in resumes]
+    
+    return resumes_response
 
 
 @resumes_router.get('/{id}/resumes/hidden')
@@ -113,3 +117,49 @@ def get_resumes(professional_id: int, x_token=Header()):
     return resumes
 
 
+@resumes_router.post('/{id}')
+def send_match_request(id: int, job_ad_id:int, x_token= Header()):
+
+    user = get_user_or_raise_401(x_token)
+
+    if not user:
+        return Unauthorized('Please log in!')
+    
+    if user.role != Role.COMPANY:
+        return Forbidden('Only companies can initiate match requests to professionals.')
+
+    resume = get_resume_by_id(id)   
+
+    if not resume:
+        return NotFound(f'Resume with id {id} does not exist!')
+    
+    job_ad = job_ad_service.get_job_ad_by_id(job_ad_id)
+
+    if not job_ad:
+        return NotFound(f'Job Ad with id {job_ad_id} does not exist!')
+
+    if job_ad.company_id != user.id:
+        return Forbidden('You do not own this Job Ad!')
+
+    professional = professional_service.get_professional_by_id(resume.professional_id)
+
+    company = company_service.get_company_by_id(user.id)
+
+    existing_match_request = match_request_service.match_request_by_combined_key(id, job_ad_id)
+
+    if existing_match_request:
+        if existing_match_request.requestor_id == user.id:
+            return BadRequest(f'You already sent a match request with Job Ad with ID {job_ad_id} to Resume with ID {id}!')
+        elif existing_match_request.requestor_id == resume.professional_id:
+            #delete match request / update match request with match = 1 ???s
+            #update professional to busy
+            #Resume status -> Matched
+            #JobAd status -> Archived
+            #send email to Company and to Professional
+            return Success(f'Instant Match!')
+    else:
+        match_request_service.initiate_match_request(user.id, id, job_ad_id)
+        #send email to Professional
+        return Success(f'Your Match Request was successfully sent to {professional.first_name} {professional.last_name}!')
+
+    
