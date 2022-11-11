@@ -44,11 +44,43 @@ def all_active(search: str | None = None, search_by: str | None = None, threshol
 
     else:
         if search_by == 'salary_range':
-            if not threshold:
-                min_salary, max_salary = parse_salary_range(search)
+            data = get_active_by_salary_range(search, threshold)
+
+        elif search_by == 'location':
+            data = get_active_by_location(search)
+        
+        elif search_by == 'skills':
+            data = get_active_by_skills(search, combined)
+
+        elif search_by == 'job_ad':
+            job_ad = get_job_ad_by_id(search)
+            skill_names = tuple(skill.name for skill in job_ad.skill_requirements)
+
+            if job_ad.work_place == "Onsite":
+                data = get_active_by_job_ad_onsite(job_ad, skill_names)
+
+            elif job_ad.work_place == "Remote":
+                data = get_active_by_job_ad_remote(job_ad, skill_names)
             else:
-                min_salary, max_salary = salary_range_threshold(parse_salary_range(search),int(threshold))
-            data = read_query(
+                data = get_active_by_job_ad_hybrid(job_ad, skill_names)
+    
+    if not data:
+        return None
+
+    resumes = [Resume.from_query_result(*row) for row in data]
+
+    for resume in resumes:
+        resume.skills = get_all_resume_skills_by_id(resume.id)
+
+    return resumes
+
+def get_active_by_salary_range(salary_range: str, threshold: int | None):
+    if not threshold:
+        min_salary, max_salary = parse_salary_range(salary_range)
+    else:
+        min_salary, max_salary = salary_range_threshold(parse_salary_range(salary_range),int(threshold))
+    
+    data = read_query(
                 '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
                     r.work_place, r.main, r.status, t.name, r.professional_id
                     FROM resumes as r
@@ -58,9 +90,10 @@ def all_active(search: str | None = None, search_by: str | None = None, threshol
                     WHERE r.status=?
                     AND r.min_salary >=?
                     AND r.max_salary <=?''', (Status.ACTIVE, min_salary, max_salary))
+    return data
 
-        elif search_by == 'location':
-            data = read_query('''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+def get_active_by_location(location:str):
+    data = read_query('''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
                                 r.work_place, r.main, r.status, t.name, r.professional_id
                     FROM resumes as r
                     LEFT JOIN
@@ -78,81 +111,126 @@ def all_active(search: str | None = None, search_by: str | None = None, threshol
                     towns as t
                     ON r.town_id = t.id
                     WHERE r.status='Active'
-                    AND r.work_place="Remote"''',(f'%{search}%',))
-        
-        elif search_by == 'skills':
-            skills_tuple = parse_skills(search)
-            if combined == True:
-                data = read_query(f'''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
-                            r.work_place, r.main, r.status, t.name, r.professional_id
-                                FROM
-                                    resumes AS r
-                                        LEFT JOIN
-                                    towns AS t ON r.town_id = t.id
-                                        LEFT JOIN
-                                    resumes_skills AS r_s ON r.id = r_s.resume_id
-                                        LEFT JOIN
-                                    skills AS s ON r_s.skill_id = s.id
-                                WHERE
-                                    r.status = "Active"
-                                        AND s.name IN {skills_tuple}
-                                        GROUP by r.id
-                                        HAVING count(distinct s.name) = {len(skills_tuple)}''')
-            else:
-                data = read_query(f'''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
-                            r.work_place, r.main, r.status, t.name, r.professional_id
-                                FROM
-                                    resumes AS r
-                                        LEFT JOIN
-                                    towns AS t ON r.town_id = t.id
-                                        LEFT JOIN
-                                    resumes_skills AS r_s ON r.id = r_s.resume_id
-                                        LEFT JOIN
-                                    skills AS s ON r_s.skill_id = s.id
-                                WHERE
-                                    r.status = 'Active'
-                                        AND s.name IN {skills_tuple}''')
+                    AND r.work_place != "Onsite"''',(f'%{location}%',))
+    return data
 
-        elif search_by == 'job_ad':
-            job_ad = get_job_ad_by_id(search)
-            if combined == True:
-                data = read_query(f'''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
-                            r.work_place, r.main, r.status, t.name, r.professional_id
-                                FROM
-                                    resumes AS r
-                                        LEFT JOIN
-                                    towns AS t ON r.town_id = t.id
-                                        LEFT JOIN
-                                    resumes_skills AS r_s ON r.id = r_s.resume_id
-                                        LEFT JOIN
-                                    skills AS s ON r_s.skill_id = s.id
-                                WHERE
-                                    r.status = "Active"
-                                        AND s.name IN {skills_tuple}
-                                        GROUP by r.id
-                                        HAVING count(distinct s.name) = {len(skills_tuple)}''')
-            else:
-                data = read_query(f'''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
-                            r.work_place, r.main, r.status, t.name, r.professional_id
-                                FROM
-                                    resumes AS r
-                                        LEFT JOIN
-                                    towns AS t ON r.town_id = t.id
-                                        LEFT JOIN
-                                    resumes_skills AS r_s ON r.id = r_s.resume_id
-                                        LEFT JOIN
-                                    skills AS s ON r_s.skill_id = s.id
-                                WHERE
-                                    r.status = 'Active'
-                                        AND s.name IN {skills_tuple}''')
+def get_active_by_skills(skills:str, combined:bool):
+    skills_tuple = parse_skills(skills)
+    if combined == True:
+        data = read_query(f'''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                        r.work_place, r.main, r.status, t.name, r.professional_id
+                        FROM
+                        resumes AS r
+                        LEFT JOIN
+                        towns AS t ON r.town_id = t.id
+                        LEFT JOIN
+                        resumes_skills AS r_s ON r.id = r_s.resume_id
+                        LEFT JOIN
+                        skills AS s ON r_s.skill_id = s.id
+                        WHERE
+                        r.status = "Active"
+                        AND s.name IN {skills_tuple}
+                        GROUP by r.id
+                        HAVING count(distinct s.name) = {len(skills_tuple)}''')
+    else:
+        data = read_query(f'''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                        r.work_place, r.main, r.status, t.name, r.professional_id
+                        FROM
+                        resumes AS r
+                        LEFT JOIN
+                        towns AS t ON r.town_id = t.id
+                        LEFT JOIN
+                        resumes_skills AS r_s ON r.id = r_s.resume_id
+                        LEFT JOIN
+                        skills AS s ON r_s.skill_id = s.id
+                        WHERE
+                        r.status = 'Active'
+                        AND s.name IN {skills_tuple}''')
+    return data
 
-    if not data:
-        return None
+def get_active_by_job_ad_onsite(job_ad: JobAd, skill_names:tuple):
+    data = read_query(f'''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                    r.work_place, r.main, r.status, t.name, r.professional_id
+                    FROM resumes as r
+                    LEFT JOIN
+                    towns as t
+                    ON r.town_id = t.id
+                    LEFT JOIN
+                    resumes_skills AS r_s ON r.id = r_s.resume_id
+                    LEFT JOIN
+                    skills AS s ON r_s.skill_id = s.id
+                    WHERE r.status='Active'
+                    AND r.work_place="Onsite"
+                    AND t.name=?
+                    AND r.min_salary >=?
+                    AND r.max_salary <=?
+                    AND s.name IN {skill_names}
+                    GROUP by r.id
+                    HAVING count(distinct s.name) = {len(skill_names)}''', (job_ad.town_name, job_ad.min_salary, job_ad.max_salary))
+    return data
 
-    #OSTAVAT OSHTE PO TOWNS VIJ REMOTE
-    #PLUS PO SKILLS 
+def get_active_by_job_ad_remote(job_ad: JobAd, skill_names:tuple):
+    data = read_query(f'''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                    r.work_place, r.main, r.status, t.name, r.professional_id
+                    FROM resumes as r
+                    LEFT JOIN
+                    towns as t
+                    ON r.town_id = t.id
+                    LEFT JOIN
+                    resumes_skills AS r_s ON r.id = r_s.resume_id
+                    LEFT JOIN
+                    skills AS s ON r_s.skill_id = s.id
+                    WHERE r.status='Active'
+                    AND r.work_place!="Onsite"
+                    AND r.min_salary >=?
+                    AND r.max_salary <=?
+                    AND s.name IN {skill_names}
+                    GROUP by r.id
+                    HAVING count(distinct s.name) = {len(skill_names)}''', (job_ad.min_salary, job_ad.max_salary))
+    return data
 
-    return (Resume.from_query_result(*row) for row in data)
+def get_active_by_job_ad_hybrid(job_ad: JobAd, skill_names:tuple):
+    data = read_query(f'''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                     r.work_place, r.main, r.status, t.name, r.professional_id
+                    FROM resumes as r
+                    LEFT JOIN
+                    towns as t
+                    ON r.town_id = t.id
+                    LEFT JOIN
+                    resumes_skills AS r_s ON r.id = r_s.resume_id
+                    LEFT JOIN
+                    skills AS s ON r_s.skill_id = s.id
+                    WHERE r.status="Active"
+                    AND r.work_place != "Remote"
+                    AND t.name = ?
+                    AND r.min_salary >=?
+                    AND r.max_salary <=?
+                    AND s.name IN {skill_names}
+                    GROUP by r.id
+                    HAVING count(distinct s.name) = {len(skill_names)}
+
+                    UNION    
+                        
+                    SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                    r.work_place, r.main, r.status, t.name, r.professional_id
+                    FROM resumes as r
+                    LEFT JOIN
+                    towns as t
+                    ON r.town_id = t.id
+                    LEFT JOIN
+                    resumes_skills AS r_s ON r.id = r_s.resume_id
+                    LEFT JOIN
+                    skills AS s ON r_s.skill_id = s.id
+                    WHERE r.status="Active"
+                    AND r.work_place != "Onsite"
+                    AND t.name != ?
+                    AND r.min_salary >=?
+                    AND r.max_salary <=?
+                    AND s.name IN {skill_names}
+                    GROUP by r.id
+                    HAVING count(distinct s.name) = {len(skill_names)}    
+                    ''', (job_ad.town_name, job_ad.min_salary, job_ad.max_salary,job_ad.town_name, job_ad.min_salary, job_ad.max_salary))
+    return data
 
 
 def parse_salary_range(salary_range:str):
@@ -259,8 +337,11 @@ def get_resume_by_id(resume_id: int) -> Resume:
                     AND r.status != ?''', (resume_id, Status.HIDDEN))
 
     resume = next((Resume.from_query_result(*row) for row in data), None)
-    resume.skills = get_all_resume_skills_by_id(resume.id)
-    return resume
+    if resume:
+        resume.skills = get_all_resume_skills_by_id(resume.id)
+        return resume
+    else:
+        return None
 
 
 def edit_resume_by_professional_id_and_resume_id(professional_id: int, resume_id: int, new_resume: Resume,
