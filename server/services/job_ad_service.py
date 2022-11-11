@@ -27,7 +27,14 @@ def get_job_ad_by_id(job_ad_id: int):
             towns AS t ON j.town_id=t.id
         WHERE j.id=?''', (job_ad_id,))
 
-    return next((JobAd.from_query_result(*row) for row in data), None)
+    job_ad = next((JobAd.from_query_result(*row) for row in data), None)
+
+    if job_ad:
+        job_ad.skill_requirements = get_all_skills_for_job_ad_id(job_ad.id)
+        return job_ad
+    
+    else:
+        return None
 
 def all_active_job_ads(search: str | None = None, search_by: str | None = None, threshold: int | None = None, combined: bool | None = None):
     
@@ -197,8 +204,8 @@ def get_all_skills_for_job_ad_id(job_ad_id: int):
                 job_ads_skills as j_s
                 ON s.id=j_s.skill_id
                     WHERE j_s.job_ad_id=?''', (job_ad_id,))
-    return (Skill(id=id, name=name, stars=stars)
-            for id, name, stars in data)
+    return [Skill(id=id, name=name, stars=stars)
+            for id, name, stars in data]
 
 def update_job_ads_views(id: int):
     current_job_ads_view = (read_query_single_element('SELECT views from job_ads where id=?', (id,)))[0]
