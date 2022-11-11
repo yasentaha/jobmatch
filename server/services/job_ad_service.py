@@ -29,7 +29,7 @@ def get_job_ad_by_id(job_ad_id: int):
 
     return next((JobAd.from_query_result(*row) for row in data), None)
 
-def all_active_job_ads(search: str | None = None, search_by: str | None = None, threshold: int | None = None):
+def all_active_job_ads(search: str | None = None, search_by: str | None = None, threshold: int | None = None, combined: bool | None = None):
     
     if search is None:
     
@@ -42,52 +42,84 @@ def all_active_job_ads(search: str | None = None, search_by: str | None = None, 
                     ON j.town_id = t.id
                     WHERE j.status=?''', (Status.ACTIVE,))
 
-    # else:
-    #     if search_by == 'salary_range':
-    #         if not threshold:
-    #             min_salary, max_salary = parse_salary_range(search)
-    #         else:
-    #             min_salary, max_salary = salary_range_threshold(parse_salary_range(search),int(threshold))
-    #         data = read_query(
-    #             '''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
-    #                 j.work_place, j.status, t.name, j.professional_id, j.views
-    #                 FROM job_ads as j
-    #                 LEFT JOIN
-    #                 towns as t
-    #                 ON j.town_id = t.id
-    #                 WHERE j.status=?
-    #                 AND j.min_salary >=?
-    #                 AND j.max_salary <=?''', (Status.ACTIVE, min_salary, max_salary))
 
-    #     elif search_by == 'location':
-    #         data = read_query('''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
-    #                             j.work_place, j.status, t.name, j.professional_id, j.views)
-    #                 FROM job_ads as j
-    #                 LEFT JOIN
-    #                 towns as t
-    #                 ON j.town_id = t.id
-    #                 WHERE j.status='Active'
-    #                 AND t.name=?
 
-    #                 UNION
+
+    else:
+        if search_by == 'salary_range':
+            if not threshold:
+                min_salary, max_salary = parse_salary_range(search)
+            else:
+                min_salary, max_salary = salary_range_threshold(parse_salary_range(search),int(threshold))
+            data = read_query(
+                '''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
+                    j.work_place, j.status, t.name, j.company_id, j.views
+                    FROM job_ads as j
+                    LEFT JOIN
+                    towns as t
+                    ON j.town_id = t.id
+                    WHERE j.status=?
+                    AND j.min_salary >=?
+                    AND j.max_salary <=?''', (Status.ACTIVE, min_salary, max_salary))
+
+        elif search_by == 'location':
+            data = read_query('''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
+                    j.work_place, j.status, t.name, j.company_id, j.views
+                    FROM job_ads as j
+                    LEFT JOIN
+                    towns as t
+                    ON j.town_id = t.id
+                    WHERE j.status='Active'
+                    AND t.name LIKE ?
+
+                    UNION
                     
-    #                 SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
-    #                         j.work_place, j.status, t.name, j.professional_id, j.views
-    #                 FROM job_ads as j
-    #                 LEFT JOIN
-    #                 towns as t
-    #                 ON j.town_id = t.id
-    #                 WHERE j.status='Active'
-    #                 AND j.work_place="Remote"''',(search,))
+                    SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
+                    j.work_place, j.status, t.name, j.company_id, j.views
+                    FROM job_ads as j
+                    LEFT JOIN
+                    towns as t
+                    ON j.town_id = t.id
+                    WHERE j.status='Active'
+                    AND j.work_place="Remote"''',(f'%{search}%',))
+        
+        elif search_by == 'skills':
+            skills_tuple = parse_skills(search)
+            if combined == True:
+                data = read_query(f'''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
+                                    j.work_place, j.status, t.name, j.company_id, j.views
+                                        FROM 
+                                    job_ads as j
+                                        LEFT JOIN
+                                    towns AS t ON j.town_id = t.id
+                                        LEFT JOIN
+                                    job_ads_skills AS j_s ON j.id = j_s.job_ad_id
+                                        LEFT JOIN
+                                    skills AS s ON j_s.skill_id = s.id
+                                        WHERE
+                                    j.status = "Active"
+                                        AND s.name IN {skills_tuple}
+                                        GROUP by j.id
+                                        HAVING count(distinct s.name) = {len(skills_tuple)}''')
+            else:
+                data = read_query(f'''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
+                                    j.work_place, j.status, t.name, j.company_id, j.views
+                                        FROM
+                                    job_ads as j
+                                        LEFT JOIN
+                                    towns AS t ON j.town_id = t.id
+                                        LEFT JOIN
+                                     job_ads_skills AS j_s ON j.id = j_s.job_ad_id
+                                        LEFT JOIN
+                                    skills AS s ON j_s.skill_id = s.id
+                                        WHERE
+                                    j.status = 'Active'
+                                        AND s.name IN {skills_tuple}''')
 
-    # if not data:
-    #     return None
-
-    #OSTAVAT OSHTE PO TOWNS VIJ REMOTE
-    #PLUS PO SKILLS 
-
+    if not data:
+        return None
+    
     return (JobAd.from_query_result(*row) for row in data)
-
 
 def parse_salary_range(salary_range:str):
     #IN ROUTER VALIDATION
@@ -100,26 +132,54 @@ def salary_range_threshold(salary_range:tuple, threshold=int):
     max_salary += threshold
     return int(min_salary), int(max_salary)
 
+def parse_skills(skills:str) -> tuple:
+    parsed_skills = tuple(remove_under_from_skill(skill) for skill in skills.split(','))
+
+    return parsed_skills
+
+def remove_under_from_skill(skill:str):
+    if '_' in skill:
+        str_list = skill.split('_')
+        new_skil = ' '.join(str_list)
+
+        return new_skil
+    else:
+        return skill
+
+def validate_stars(skills: list[Skill]):
+    for skill in skills:
+        if not 1 <= skill.stars <= 5:
+            return None
+
 def get_all_active_job_ads_by_company_id(company_id: int):
+    
     data = read_query(
-        '''SELECT j.id
-                FROM job_ads as j
+        '''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
+                    j.work_place, j.status, t.name, j.company_id, j.views
+                    FROM job_ads AS j
+                    LEFT JOIN
+                    towns as t
+                    ON r.town_id = t.id
                     WHERE j.company_id=? AND j.status=?''', (company_id, Status.ACTIVE))
     if data:
-        return (id for id in data)
+        return (JobAd.from_query_result(*row) for row in data)
     else:
-        return [0]
+        return None
 
 def get_all_archived_job_ads_by_company_id(company_id: int):
+    
     data = read_query(
-        '''SELECT j.id
-                FROM job_ads as j
+        '''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
+                    j.work_place, j.status, t.name, j.company_id, j.views
+                    FROM job_ads AS j
+                    LEFT JOIN
+                    towns as t
+                    ON r.town_id = t.id
                     WHERE j.company_id=? AND j.status=?''', (company_id, Status.ARCHIVED))
-
     if data:
-        return (id for id in data)
+        return (JobAd.from_query_result(*row) for row in data)
     else:
-        return [0]
+        return None
 
 def get_number_of_all_active_job_ads_by_company_id(company_id: int):
     data = read_query(
