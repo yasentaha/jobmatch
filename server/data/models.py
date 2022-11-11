@@ -233,12 +233,11 @@ class JobAd(BaseModel):
     town_name: str  # if town_name not in towns, catch error
     views: int
     company_id: int
-    # skill_requirements: list[Skill]
-    # match_request_ids: list[int]
+    skill_requirements: list[Skill] | None
 
 
     @classmethod
-    def from_query_result(cls, id, title, description, min_salary, max_salary, work_place, status, town_name, company_id, views):
+    def from_query_result(cls, id, title, description, min_salary, max_salary, work_place, status, town_name, company_id, views, skill_requirements=None):
         return cls(
             id=id,
             title=title,
@@ -249,7 +248,8 @@ class JobAd(BaseModel):
             status=status,
             town_name=town_name,
             company_id=company_id,
-            views=views)
+            views=views,
+            skill_requirements=skill_requirements)
 
 class CreateJobAd(BaseModel):
     id: int | None
