@@ -127,9 +127,10 @@ class Resume(BaseModel):
     main: bool
     status: str
     town_name: str  # if town_name not in towns, catch error
-    professional_id: int
+    professional_id: int | None
+    skills: list[Skill] | None
     @classmethod
-    def from_query_result(cls, id, title, description, min_salary, max_salary, work_place, main, status, town_name, professional_id):
+    def from_query_result(cls, id, title, description, min_salary, max_salary, work_place, main, status, town_name, professional_id, skills=None):
         return cls(
             id=id,
             title=title,
@@ -140,7 +141,7 @@ class Resume(BaseModel):
             main=main,
             status=status,
             town_name=town_name,
-            professional_id = professional_id)
+            professional_id = professional_id, skills=skills)
 
 
 class CreateResume(BaseModel):
@@ -377,6 +378,5 @@ class ResumeWithoutDescriptionAndSalaryResponse(BaseModel):
     resume: ResumeWithoutDescriptionAndSalary
 
 class ResumeResponseModel(BaseModel):
+    full_name: str 
     resume: Resume
-    skills: list[Skill]
-    match_request_ids: list[int]

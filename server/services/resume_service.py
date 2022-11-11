@@ -3,6 +3,7 @@ from server.common.responses import Success, BadRequest, NotFound
 from server.data.database import read_query, insert_query, update_query, read_query_single_element
 from server.data.models import Resume, Status, Skill, CreateResume, Role, JobAd, MatchRequestResponse, ResumeWithoutDescriptionAndSalary
 from server.services.professional_service import get_professional_by_id
+from server.services.job_ad_service import get_job_ad_by_id
 
 
 # def all_active_resumes_without_job_salary_and_description_by_id(id: int):
@@ -112,6 +113,39 @@ def all_active(search: str | None = None, search_by: str | None = None, threshol
                                     r.status = 'Active'
                                         AND s.name IN {skills_tuple}''')
 
+        elif search_by == 'job_ad':
+            job_ad = get_job_ad_by_id(search)
+            if combined == True:
+                data = read_query(f'''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                            r.work_place, r.main, r.status, t.name, r.professional_id
+                                FROM
+                                    resumes AS r
+                                        LEFT JOIN
+                                    towns AS t ON r.town_id = t.id
+                                        LEFT JOIN
+                                    resumes_skills AS r_s ON r.id = r_s.resume_id
+                                        LEFT JOIN
+                                    skills AS s ON r_s.skill_id = s.id
+                                WHERE
+                                    r.status = "Active"
+                                        AND s.name IN {skills_tuple}
+                                        GROUP by r.id
+                                        HAVING count(distinct s.name) = {len(skills_tuple)}''')
+            else:
+                data = read_query(f'''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                            r.work_place, r.main, r.status, t.name, r.professional_id
+                                FROM
+                                    resumes AS r
+                                        LEFT JOIN
+                                    towns AS t ON r.town_id = t.id
+                                        LEFT JOIN
+                                    resumes_skills AS r_s ON r.id = r_s.resume_id
+                                        LEFT JOIN
+                                    skills AS s ON r_s.skill_id = s.id
+                                WHERE
+                                    r.status = 'Active'
+                                        AND s.name IN {skills_tuple}''')
+
     if not data:
         return None
 
@@ -149,7 +183,8 @@ def remove_under_from_skill(skill:str):
 def validate_stars(skills: list[Skill]):
     for skill in skills:
         if not 1 <= skill.stars <= 5:
-            return None
+            return False
+    return True
 
 
 def all_hidden_resumes_by_id(id: int):
@@ -162,17 +197,21 @@ def all_hidden_resumes_by_id(id: int):
                    work_place=work_place, status=status, town_id=town_id, main=main)
             for id, title, description, min_salary, max_salary, work_place, status, town_id, main in data)
 
-def create_resume(professional_id: int, create_resume: CreateResume, insert_data=None):
+def create_resume(professional_id: int, resume: Resume, insert_data=None):
     if insert_data is None:
         insert_data = insert_query
 
-    town_id = get_town_id_by_name(create_resume.town_name)
+    town_id = get_town_id_by_name(resume.town_name)
 
     generated_resume_id = insert_data(
         '''insert into resumes(title, description, min_salary, max_salary, work_place,main,status,town_id,professional_id) 
         values(?,?,?,?,?,?,?,?,?)''',
-        (create_resume.title, create_resume.description, create_resume.min_salary, create_resume.max_salary,
-         create_resume.work_place, create_resume.main, create_resume.status, town_id, professional_id))
+        (resume.title, resume.description, resume.min_salary, resume.max_salary,
+         resume.work_place, resume.main, resume.status, town_id, professional_id))
+    
+    skills_with_ids = return_skills_with_ids(resume.skills)
+    if generated_resume_id:
+        [add_skill_to_resume(generated_resume_id, skill) for skill in skills_with_ids]
 
     return get_resume_by_id(generated_resume_id)
 
@@ -208,7 +247,7 @@ def create_resume_and_add_skill(professional_id: int, create_resume: CreateResum
     return Success(f'Resume with title {create_resume.title} was created!')
 
 
-def get_resume_by_id(resume_id: int):
+def get_resume_by_id(resume_id: int) -> Resume:
     data = read_query(
         '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
                     r.work_place, r.main, r.status, t.name, r.professional_id
@@ -219,7 +258,9 @@ def get_resume_by_id(resume_id: int):
                     WHERE r.id=?
                     AND r.status != ?''', (resume_id, Status.HIDDEN))
 
-    return next((Resume.from_query_result(*row) for row in data), None)
+    resume = next((Resume.from_query_result(*row) for row in data), None)
+    resume.skills = get_all_resume_skills_by_id(resume.id)
+    return resume
 
 
 def edit_resume_by_professional_id_and_resume_id(professional_id: int, resume_id: int, resume: Resume,
@@ -227,12 +268,17 @@ def edit_resume_by_professional_id_and_resume_id(professional_id: int, resume_id
     if update_data is None:
         update_data = update_query
 
+    town_id = get_town_id_by_name(resume.town_name)
+
     update_data(
         '''UPDATE resumes
             SET title=?, description=?, min_salary=?, max_salary=?,work_place=?,status=?,town_id=?,main=?
              WHERE professional_id = ? AND resumes.id=?''',
         (resume.title, resume.description, resume.min_salary, resume.max_salary, resume.work_place,
-         resume.status, resume.town_id, resume.main, professional_id, resume_id))
+         resume.status, town_id, resume.main, professional_id, resume_id))
+
+    #remove skills
+    #add skills
 
     return Resume(id=update_data.id, title=update_data.title, description=update_data.description,
                   min_salary=update_data.min_salary, max_salary=update_data.max_salary,
@@ -276,7 +322,7 @@ def get_all_resume_skills_by_id(resume_id: int):
                 resumes_skills as r_s
                 ON s.id=r_s.skill_id
                     WHERE r_s.resume_id=?''', (resume_id,))
-    return (Skill.from_query_result(*row) for row in data)
+    return [Skill.from_query_result(*row) for row in data]
 
 
 def get_town_name_by_id(town_id: int):
@@ -341,6 +387,18 @@ def add_skill_to_resume(resume_id: int, skill: Skill):
     insert_query(
         '''INSERT INTO resumes_skills(resume_id, skill_id, stars) VALUES (?,?,?)''',
         (resume_id, skill.id, skill.stars))
+
+def delete_skill_from_resume(resume_id:int):
+
+    update_query('''DELETE from resumes_skills where resume_id = ?''', (resume_id,))
+
+# def update_skills(old_resume_skills: list[Skill], new_resume_skills: list[Skill]):
+#     for skill in old_resume_skills:
+#         if skill.id not in new_resume_skills:
+#             pass
+#             #delete skills
+#         else:
+#             if skill
 
 def main_resume_for_professional_exists(professional_id:int):
     data = read_query('SELECT 1 from resumes where main = 1 and professional_id = ?', (professional_id,))
