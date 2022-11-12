@@ -1,9 +1,22 @@
 from sqlite3 import OperationalError
 from server.common.responses import Success, BadRequest, NotFound
-from server.data.database import read_query, insert_query, update_query, read_query_single_element
 from server.data.models import Resume, Status, Skill, CreateResume, Role, JobAd, MatchRequestResponse, ResumeWithoutDescriptionAndSalary
+from server.data.database import read_query, insert_query, update_query, read_query_single_element
 from server.services.professional_service import get_professional_by_id
 from server.services.job_ad_service import get_job_ad_by_id
+from server.common.validations_and_methods import (add_skill,
+                                                   parse_salary_range,
+                                                   parse_skills,
+                                                   remove_under_from_skill,
+                                                   salary_range_threshold,
+                                                   validate_stars,
+                                                   validate_work_place,
+                                                   add_skills,
+                                                   return_skills_with_ids,
+                                                   skill_exists,
+                                                   get_skill_id_by_name,
+                                                   get_town_id_by_name,
+                                                   get_town_name_by_id)
 
 
 # def all_active_resumes_without_job_salary_and_description_by_id(id: int):
@@ -233,37 +246,6 @@ def get_active_by_job_ad_hybrid(job_ad: JobAd, skill_names:tuple):
     return data
 
 
-def parse_salary_range(salary_range:str):
-    #IN ROUTER VALIDATION
-    min_salary, max_salary = (int(min_max) for min_max in salary_range.split('-'))
-    return min_salary, max_salary
-
-def salary_range_threshold(salary_range:tuple, threshold=int):
-    min_salary, max_salary = salary_range
-    min_salary -= threshold
-    max_salary += threshold
-    return int(min_salary), int(max_salary)
-
-def parse_skills(skills:str) -> tuple:
-    parsed_skills = tuple(remove_under_from_skill(skill) for skill in skills.split(','))
-
-    return parsed_skills
-
-def remove_under_from_skill(skill:str):
-    if '_' in skill:
-        str_list = skill.split('_')
-        new_skil = ' '.join(str_list)
-
-        return new_skil
-    else:
-        return skill
-
-def validate_stars(skills: list[Skill]):
-    for skill in skills:
-        if not 1 <= skill.stars <= 5:
-            return False
-    return True
-
 
 def all_hidden_resumes_by_id(id: int):
     data = read_query(
@@ -408,20 +390,6 @@ def get_all_resume_skills_by_id(resume_id: int):
     return [Skill.from_query_result(*row) for row in data]
 
 
-def get_town_name_by_id(town_id: int):
-    data = read_query('''SELECT t.name
-    FROM towns as t
-    WHERE t.id=?''', (town_id,))[0]
-
-    return data
-
-
-def get_town_id_by_name(town_name: str) -> int:
-    town_id = (read_query_single_element('SELECT id from towns where name = ?', (town_name,)))[0]
-
-    return town_id
-
-
 def get_number_of_all_active_resumes(professional_id: int):
     data = read_query(
         '''SELECT r.id FROM resumes as r 
@@ -429,37 +397,6 @@ def get_number_of_all_active_resumes(professional_id: int):
 
     return len(data)
 
-
-def add_skills(skills: list[Skill]): #add skill in DB
-    for skill in skills:
-        if not skill_exists(skill.name):
-            add_skill(skill.name)
-
-def return_skills_with_ids(skills: list[Skill]) -> list[Skill]:
-    skills_with_ids = []
-    for skill in skills:
-        skill.id = get_skill_id_by_name(skill.name)
-        skills_with_ids.append(skill)
-
-    return skills_with_ids
-
-
-def add_skill(skill_name: str):
-    auto_increment_id = insert_query(
-        '''INSERT INTO skills(name) VALUES (?)''', (skill_name,))
-
-    return auto_increment_id
-
-def skill_exists(skill_name:str) -> bool:
-    skill_name = skill_name.lower()
-    data = read_query('SELECT 1 from skills where name = ?', (skill_name,))
-
-    return any(data)
-
-def get_skill_id_by_name(skill_name:str) -> int:
-    skill_id = (read_query_single_element('SELECT id from skills where name = ?', (skill_name,)))
-
-    return skill_id[0] if skill_id else None
 
 def add_skill_to_resume(resume_id: int, skill: Skill):
     # auto_increment_id = insert_query(

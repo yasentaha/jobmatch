@@ -64,8 +64,8 @@ def edit_resume(resume_id: int, resume: Resume, x_token= Header()):
 
     edited_resume = edit_resume_by_professional_id_and_resume_id(user.id, resume_id, resume)
     if edited_resume:
-        return ResumeResponseModel(full_name=get_professional_fullname_by_id(edit_resume.professional_id), 
-                resume=edit_resume)
+        return ResumeResponseModel(full_name=get_professional_fullname_by_id(edited_resume.professional_id), 
+                resume=edited_resume)
 
 
 @resumes_router.get('/{id}')
