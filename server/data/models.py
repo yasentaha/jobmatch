@@ -231,8 +231,8 @@ class JobAd(BaseModel):
     work_place: str
     status: str
     town_name: str  # if town_name not in towns, catch error
-    views: int
-    company_id: int
+    views: int | None
+    company_id: int | None
     skill_requirements: list[Skill] | None
 
 
@@ -250,18 +250,6 @@ class JobAd(BaseModel):
             company_id=company_id,
             views=views,
             skill_requirements=skill_requirements)
-
-class CreateJobAd(BaseModel):
-    id: int | None
-    title: str
-    description: str
-    min_salary: int
-    max_salary: int
-    work_place: str
-    status: str
-    town_name: str  # if town_name not in towns, catch error
-    views:int | None
-    skill_requirements: list[Skill]
 
 class MatchRequestResponse(BaseModel):
     id: int
@@ -346,10 +334,6 @@ class PersonalCompanyResponseModel(BaseModel):
     active_job_ads: int
     list_of_matches: list[int]
 
-class JobAdResponseModel(BaseModel):
-    company_name: str
-    job_ad: JobAd
-    skill_requirements: list[Skill]
 
 class ResumeWithoutDescriptionAndSalary(BaseModel):
     id: int | None
@@ -380,3 +364,7 @@ class ResumeWithoutDescriptionAndSalaryResponse(BaseModel):
 class ResumeResponseModel(BaseModel):
     full_name: str 
     resume: Resume
+
+class JobAdResponseModel(BaseModel):
+    company_name: str 
+    job_ad: JobAd
