@@ -151,10 +151,21 @@ def send_match_request(id: int, job_ad_id:int, x_token= Header()):
         if existing_match_request.requestor_id == user.id:
             return BadRequest(f'You already sent a match request with Job Ad with ID {job_ad_id} to Resume with ID {id}!')
         elif existing_match_request.requestor_id == resume.professional_id:
-            #delete match request / update match request with match = 1 ???s
+            #update match request with match = 1 ???
+            match_request_service.its_a_match(existing_match_request.id)
+            
             #update professional to busy
+            professional_service.make_professional_busy(professional.id)
+
+            #update company's successful matches +1
+            company_service.update_successful_matches(company.id)
+
             #Resume status -> Matched
+            resume_service.make_resume_matched(resume.id)
+
             #JobAd status -> Archived
+            job_ad_service.make_job_ad_archived(job_ad.id)
+
             #send email to Company and to Professional
             return Success(f'Instant Match!')
     else:
