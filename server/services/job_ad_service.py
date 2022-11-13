@@ -83,7 +83,7 @@ def delete_all_skills_from_job_ad(job_ad_id:int):
     update_query('''DELETE from job_ads_skills where job_ad_id = ?''', (job_ad_id,))
 
 
-def all_active_job_ads(search: str | None = None, search_by: str | None = None, threshold: int | None = None, combined: bool | None = None):
+def all_active_job_ads(search = None, search_by: str | None = None, threshold: int | None = None, combined: bool | None = None):
     
     if search is None:
     
@@ -108,9 +108,7 @@ def all_active_job_ads(search: str | None = None, search_by: str | None = None, 
             data = get_all_active_by_skills(search, combined)
 
         elif search_by == 'resume':
-            resume = get_resume_by_id(search)
-            if not resume:
-                return None
+            resume = search
             
             skill_names = tuple(skill.name for skill in resume.skills)
 
@@ -207,7 +205,7 @@ def get_all_active_by_skills(skills:str, combined:bool):
     return data
 
 def get_all_active_by_resume_onsite(resume: Resume, skill_names:tuple):
-    data = read_query(f'''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
+    data = read_query(f'''SELECT DISTINCT j.id, j.title, j.description, j.min_salary, j.max_salary, 
                     j.work_place, j.status, t.name, j.company_id, j.views
                     FROM 
                     job_ads as j
@@ -221,14 +219,11 @@ def get_all_active_by_resume_onsite(resume: Resume, skill_names:tuple):
                     AND j.work_place="Onsite"
                     AND t.name=?
                     AND j.min_salary >=?
-                    AND j.max_salary <=?
-                    AND s.name IN {skill_names}
-                    GROUP by j.id
-                    HAVING count(distinct s.name) = {len(skill_names)}''', (resume.town_name, resume.min_salary, resume.max_salary))
+                    AND s.name IN {skill_names}''', (resume.town_name, resume.min_salary))
     return data
 
 def get_all_active_by_resume_remote(resume: Resume, skill_names:tuple):
-    data = read_query(f'''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
+    data = read_query(f'''SELECT DISTINCT j.id, j.title, j.description, j.min_salary, j.max_salary, 
                     j.work_place, j.status, t.name, j.company_id, j.views
                     FROM 
                     job_ads as j
@@ -241,14 +236,11 @@ def get_all_active_by_resume_remote(resume: Resume, skill_names:tuple):
                     WHERE j.status='Active'
                     AND j.work_place!="Onsite"
                     AND j.min_salary >=?
-                    AND j.max_salary <=?
-                    AND s.name IN {skill_names}
-                    GROUP by j.id
-                    HAVING count(distinct s.name) = {len(skill_names)}''', (resume.min_salary, resume.max_salary))
+                    AND s.name IN {skill_names}''', (resume.min_salary,))
     return data
 
 def get_all_active_by_resume_hybrid(resume: Resume, skill_names:tuple):
-    data = read_query(f'''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
+    data = read_query(f'''SELECT DISTINCT j.id, j.title, j.description, j.min_salary, j.max_salary, 
                     j.work_place, j.status, t.name, j.company_id, j.views
                     FROM 
                     job_ads as j
@@ -262,14 +254,11 @@ def get_all_active_by_resume_hybrid(resume: Resume, skill_names:tuple):
                     AND j.work_place != "Remote"
                     AND t.name = ?
                     AND j.min_salary >=?
-                    AND j.max_salary <=?
                     AND s.name IN {skill_names}
-                    GROUP by j.id
-                    HAVING count(distinct s.name) = {len(skill_names)}
 
                     UNION    
                         
-                    SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
+                    SELECT DISTINCT j.id, j.title, j.description, j.min_salary, j.max_salary, 
                     j.work_place, j.status, t.name, j.company_id, j.views
                     FROM 
                     job_ads as j
@@ -283,11 +272,7 @@ def get_all_active_by_resume_hybrid(resume: Resume, skill_names:tuple):
                     AND j.work_place != "Onsite"
                     AND t.name != ?
                     AND j.min_salary >=?
-                    AND j.max_salary <=?
-                    AND s.name IN {skill_names}
-                    GROUP by j.id
-                    HAVING count(distinct s.name) = {len(skill_names)}    
-                    ''', (resume.town_name, resume.min_salary, resume.max_salary,resume.town_name, resume.min_salary, resume.max_salary))
+                    AND s.name IN {skill_names}''', (resume.town_name, resume.min_salary,resume.town_name, resume.min_salary))
     return data
 
 
@@ -355,33 +340,11 @@ def add_skill_to_job_ad(job_ad_id: int, skill: Skill):
         '''INSERT INTO job_ads_skills(job_ad_id, skill_id, stars) VALUES (?,?,?)''',
         (job_ad_id, skill.id, skill.stars))
 
-def get_resume_by_id(resume_id: int) -> Resume:
-    data = read_query(
-        '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
-                    r.work_place, r.main, r.status, t.name, r.professional_id
-                    FROM resumes as r
-                    LEFT JOIN
-                    towns as t
-                    ON r.town_id = t.id
-                    WHERE r.id=?
-                    AND r.status != ?''', (resume_id, Status.HIDDEN))
 
-    resume = next((Resume.from_query_result(*row) for row in data), None)
-    if resume:
-        resume.skills = get_all_resume_skills_by_id(resume.id)
-        return resume
-    else:
-        return None
-
-def get_all_resume_skills_by_id(resume_id: int):
-    data = read_query(
-        '''SELECT s.id, s.name,r_s.stars
-                 FROM skills as s 
-                 RIGHT JOIN 
-                resumes_skills as r_s
-                ON s.id=r_s.skill_id
-                    WHERE r_s.resume_id=?''', (resume_id,))
-    return [Skill.from_query_result(*row) for row in data]
+def make_job_ad_archived(job_ad_id:int, update_data=update_query):
+    return update_data('''UPDATE job_ads
+                        SET status=?
+                        WHERE id= ?''', (Status.ARCHIVED, job_ad_id))
 
 def get_list_of_matches(id: int):
     ...
