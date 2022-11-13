@@ -1,6 +1,6 @@
 from sqlite3 import OperationalError
 from server.common.responses import Success, BadRequest, NotFound
-from server.data.models import Resume, Status, Skill, CreateResume, Role, JobAd, MatchRequestResponse, ResumeWithoutDescriptionAndSalary
+from server.data.models import Resume, Status, Skill, CreateResume, Role, JobAd, ResumeWithoutDescriptionAndSalary
 from server.data.database import read_query, insert_query, update_query, read_query_single_element
 from server.services.professional_service import get_professional_by_id
 from server.services.job_ad_service import get_job_ad_by_id
@@ -350,6 +350,10 @@ def edit_resume_by_professional_id_and_resume_id(professional_id: int, resume_id
 
     return get_resume_by_id(resume_id)
 
+def make_resume_matched(resume_id:int, update_data=update_query):
+    return update_data('''UPDATE resumes
+                        SET status=?
+                        WHERE id= ?''', (Status.MATCHED, resume_id))
 
 def get_all_active_resumes_by_professional_id(professional_id: int):
     data = read_query(
@@ -462,60 +466,6 @@ def search_all_active_job_ads(search: str | None = None, search_by: str | None =
 
     return (JobAd.from_query_result(*row) for row in data)
 
-
-def create_match_request_by_professional(professional_id: int, resume_id: int):
-    # no match by skills !!!
-
-    selected_resume: Resume
-    professional = get_professional_by_id(professional_id)
-    success = False
-
-    selected_resume = get_resume_by_id(professional_id, resume_id)
-
-    town_name = get_town_name_by_id(selected_resume.town_id)
-
-    all_active_job_ads = search_all_active_job_ads()
-
-    for job_ad in all_active_job_ads:
-        if selected_resume.title == job_ad.title and selected_resume.min_salary <= job_ad.min_salary and town_name == job_ad.town_name:
-            data = insert_query('''
-            INSERT INTO match_requests(id, resume_id, job_ad_id, `match`, request_from) VALUES (?,?,?,?)''',
-                                (selected_resume.id, job_ad.id, 1, professional.first_name))
-            success = True
-            break
-
-    if success:
-        return MatchRequestResponse(data.id, data.resume_id, data.job_ad, data.match, data.request_from)
-
-    return NotFound('You do not have to satisfy every requirement or meet every qualification listed!')
-
-
-def get_professional_match_request_by_resume_id(resume_id: int):
-    try:
-        data = read_query('''
-                    SELECT m_r.id,m_r.resume_id, m_r.job_ad_id, m_r.match, m_r.request_from FROM match_requests AS m_r
-                    WHERE m_r.resume_id=?''', (resume_id,))
-    except OperationalError:
-        return NotFound('You do not have to satisfy every requirement or meet every qualification listed!')
-
-    return MatchRequestResponse(data.id, data.resume_id, data.job_ad_id,
-                                data.match, data.request_from)
-
-
-def get_match_request_by_id(match_request_id: int):
-    try:
-        data = read_query('''
-        SELECT m_r.id,m_r.resume_id,m_r.job_ad_id,m_r.`match`,m_r.request_from FROM match_requests AS m_r
-        WHERE m_r.id=?''', (match_request_id,))
-    except OperationalError:
-        return NotFound(f'Match request with id {match_request_id} not found!')
-
-    return MatchRequestResponse(data.id, data.resume_id, data.job_ad_id,
-                                data.match, data.request_from)
-
-
-def get_list_of_matches(id: int):
-    return None
 
 
 def sort(professionals, reverse):
