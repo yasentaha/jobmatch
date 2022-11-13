@@ -119,14 +119,14 @@ CREATE TABLE `match_requests` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `resume_id` int(11) NOT NULL,
   `job_ad_id` int(11) NOT NULL,
-  `match` tinyint(2) NOT NULL DEFAULT 0,
-  `request_from` int(11) DEFAULT NULL,
+  `is_match` tinyint(2) NOT NULL DEFAULT 0,
+  `requestor_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`,`resume_id`,`job_ad_id`),
   KEY `fk_resumes_has_job_ads_job_ads1_idx` (`job_ad_id`),
   KEY `fk_resumes_has_job_ads_resumes1_idx` (`resume_id`),
   CONSTRAINT `fk_resumes_has_job_ads_job_ads1` FOREIGN KEY (`job_ad_id`) REFERENCES `job_ads` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_resumes_has_job_ads_resumes1` FOREIGN KEY (`resume_id`) REFERENCES `resumes` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -135,6 +135,7 @@ CREATE TABLE `match_requests` (
 
 LOCK TABLES `match_requests` WRITE;
 /*!40000 ALTER TABLE `match_requests` DISABLE KEYS */;
+INSERT INTO `match_requests` VALUES (1,14,33,0,39);
 /*!40000 ALTER TABLE `match_requests` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -228,7 +229,7 @@ CREATE TABLE `resumes_skills` (
 
 LOCK TABLES `resumes_skills` WRITE;
 /*!40000 ALTER TABLE `resumes_skills` DISABLE KEYS */;
-INSERT INTO `resumes_skills` VALUES (2,1,5),(2,3,5),(3,2,4),(3,4,5),(3,5,4),(3,6,5),(3,7,4),(4,1,5),(4,2,4),(4,3,5),(5,1,5),(5,2,4),(5,3,5),(5,6,5),(5,7,4),(6,1,5),(6,2,4),(6,3,5),(6,6,5),(6,7,4),(7,1,5),(7,2,3),(7,3,4),(7,6,4),(7,17,4),(8,1,5),(8,2,5),(8,4,5),(8,17,5),(8,26,5),(9,1,5),(9,2,5),(9,4,5),(9,17,5),(9,26,5),(10,4,5),(10,20,5),(10,21,4),(10,22,4),(10,26,4),(11,20,5),(11,21,4),(11,22,4),(11,26,4),(11,34,4),(12,1,4),(12,3,4),(12,4,5),(12,5,4),(12,11,4),(13,1,5),(13,2,4),(13,3,4),(13,6,5),(13,7,4),(14,1,5),(14,2,4),(14,3,4),(14,6,5),(14,7,4);
+INSERT INTO `resumes_skills` VALUES (2,1,5),(2,3,5),(3,2,4),(3,4,5),(3,5,4),(3,6,5),(3,7,4),(4,1,5),(4,2,4),(4,3,5),(5,1,5),(5,2,4),(5,3,5),(5,6,5),(5,7,4),(7,1,5),(7,2,3),(7,3,4),(7,6,4),(7,17,4),(9,1,5),(9,2,5),(9,4,5),(9,17,5),(9,26,5),(10,4,5),(10,20,5),(10,21,4),(10,22,4),(10,26,4),(11,20,5),(11,21,4),(11,22,4),(11,26,4),(11,34,4),(12,1,4),(12,3,4),(12,4,5),(12,5,4),(12,11,4),(13,1,5),(13,2,4),(13,3,4),(13,6,5),(13,7,4),(14,1,5),(14,2,4),(14,3,4),(14,6,5),(14,7,4);
 /*!40000 ALTER TABLE `resumes_skills` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -323,4 +324,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-11-11 18:44:08
+-- Dump completed on 2022-11-13 23:03:04
