@@ -2,8 +2,10 @@ from fastapi import APIRouter, Header
 from pydantic import BaseModel
 from server.common.auth import get_user_or_raise_401
 from server.common.responses import NotFound, Forbidden, Unauthorized, Success, BadRequest
-from server.data.models import Professional, Resume, ProfessionalInfo, ResumeWithSkillsResponseModel, Role, ResumeWithoutDescriptionAndSalary, ResumeWithoutDescriptionAndSalaryResponse
-from server.services import professional_service, resume_service, user_service
+from server.data.models import (Professional, Resume, ProfessionalInfo, ResumeWithSkillsResponseModel, Role, 
+                                ResumeWithoutDescriptionAndSalary, ResumeWithoutDescriptionAndSalaryResponse,
+                                ProfessionalMatchRequestResponse)
+from server.services import professional_service, resume_service, user_service, match_request_service, job_ad_service, company_service
 from server.services.professional_service import edit_professional_info, get_professional_info_by_id, edit_professional, get_professional_by_id
 from server.services.user_service import edit_user_info, get_town_id_by_name, valid_email
 
@@ -126,3 +128,79 @@ def professional_by_id(id: int, x_token: str = Header()):
             return resumes_full
     else:
         return Forbidden('Please log in!')
+
+
+@professionals_router.get('/{id}/match_requests')
+def get_match_requests(id: int, x_token: str = Header()):
+    user = get_user_or_raise_401(x_token)
+
+    if not user:
+        return Unauthorized('Please log in!')
+
+    if user.id != id:
+        return Forbidden('You cannot view the Match Requests of others.')
+
+    match_requests = match_request_service.get_match_requests_by_professional_id(user.id)
+
+    if not match_requests:
+        return NotFound('There are currently no match requests waiting for you.')
+
+    return (ProfessionalMatchRequestResponse.from_query_result(match_request.id, 
+                                            user_service.get_company_name_by_id(match_request.requestor_id),
+                                            job_ad_service.get_job_ad_by_id(match_request.job_ad_id),
+                                            resume_service.get_resume_by_id(match_request.resume_id)) for match_request in match_requests)
+
+@professionals_router.put('/{id}/match_requests/{match_request_id}')
+def match_job_ad(id: int, match_request_id: int, x_token: str = Header()):
+    user = get_user_or_raise_401(x_token)
+
+    if not user:
+        return Unauthorized('Please log in!')
+
+    if user.id != id:
+        return Forbidden('You cannot match this job ad.')
+
+    match_request = match_request_service.get_match_request_by_id(match_request_id)
+
+    if not match_request:
+        return NotFound('Match request not found.')
+
+    company = company_service.get_company_by_id(match_request.requestor_id)
+
+    match_request_service.its_a_match(match_request_id)
+    
+    #update professional to busy
+    professional_service.make_professional_busy(id)
+
+    #update company's successful matches +1
+    company_service.update_successful_matches(company.id)
+
+    #Resume status -> Matched
+    resume_service.make_resume_matched(match_request.resume_id)
+
+    #JobAd status -> Archived
+    job_ad_service.make_job_ad_archived(match_request.job_ad_id)
+
+    #send email to company - its a match!
+    return Success(f"You successfully matched {company.company_name}'s Job Ad!")
+
+@professionals_router.delete('/{id}/match_requests/{match_request_id}')
+def reject_match_request(id: int, match_request_id: int, x_token: str = Header()):
+    user = get_user_or_raise_401(x_token)
+
+    if not user:
+        return Unauthorized('Please log in!')
+
+    if user.id != id:
+        return Forbidden('You cannot view the Match Requests of others.')
+
+    if not match_request_service.professional_owns_match_request(user.id, match_request_id):
+        return Forbidden('You cannot reject this match request!')
+
+    match_request = match_request_service.get_match_request_by_id(match_request_id)
+
+    if match_request_service.delete_match_request(match_request_id):
+        #send email to Company that they got rejected
+        return Success(f'Match request from {user_service.get_company_name_by_id(match_request.requestor_id)} rejected!')
+
+    
