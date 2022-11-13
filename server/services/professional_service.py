@@ -97,6 +97,11 @@ def edit_professional(id:int,professional: Professional,update_data=None):
     except DataError:
         return False
 
+def make_professional_busy(professional_id:int, update_data=update_query):
+    return update_data('''UPDATE professionals
+            SET busy= ?
+            WHERE user_id = ?''', (1, professional_id))
+
 
 
 def sort(professionals: list[Professional], *, attribute='name', reverse=False):
