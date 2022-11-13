@@ -251,17 +251,20 @@ class JobAd(BaseModel):
             views=views,
             skill_requirements=skill_requirements)
 
-class MatchRequestResponse(BaseModel):
-    id: int
-    request_from: str #Name
-    resume_id: Resume
-    job_ad_id: JobAd
 
 class MatchRequest(BaseModel):
     id: int
-    resume_id: Resume
-    job_ad_id: JobAd
+    resume_id: int
+    job_ad_id: int
     requestor_id: int
+    
+    @classmethod
+    def from_query_result(cls, id, resume_id, job_ad_id, requestor_id):
+        return cls(
+            id=id,
+            resume_id=resume_id,
+            job_ad_id=job_ad_id,
+            requestor_id=requestor_id)
 
 
 class Town(BaseModel):
@@ -368,3 +371,24 @@ class ResumeResponseModel(BaseModel):
 class JobAdResponseModel(BaseModel):
     company_name: str 
     job_ad: JobAd
+
+class ProfessionalMatchRequestResponse(BaseModel):
+    id: int
+    company_name: str
+    job_ad: JobAd
+    resume: Resume
+
+    @classmethod
+    def from_query_result(cls, id, company_name, job_ad, resume):
+        return cls(
+            id=id,
+            company_name=company_name,
+            job_ad=job_ad,
+            resume=resume)
+
+class CompanyMatchRequestResponse(BaseModel):
+    id: int
+    professional_name: str
+    resume: Resume
+    job_ad: JobAd
+    
