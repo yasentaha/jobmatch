@@ -1,4 +1,4 @@
-from server.data.models import Company, JobAd, Resume, Skill, Status
+from server.data.models import JobAd, Resume, Skill, Status
 from server.common.validations_and_methods import (add_skill,
                                                    parse_salary_range,
                                                    parse_skills,
@@ -285,10 +285,15 @@ def get_all_active_job_ads_by_company_id(company_id: int):
                     FROM job_ads AS j
                     LEFT JOIN
                     towns as t
-                    ON r.town_id = t.id
+                    ON j.town_id = t.id
                     WHERE j.company_id=? AND j.status=?''', (company_id, Status.ACTIVE))
     if data:
-        return (JobAd.from_query_result(*row) for row in data)
+        job_ads = [JobAd.from_query_result(*row) for row in data]
+        job_ads_with_skills = []
+        for job in job_ads:
+            job.skill_requirements = get_all_skills_for_job_ad_id(job.id)
+            job_ads_with_skills.append(job)
+        return job_ads_with_skills
     else:
         return None
 
@@ -300,10 +305,15 @@ def get_all_archived_job_ads_by_company_id(company_id: int):
                     FROM job_ads AS j
                     LEFT JOIN
                     towns as t
-                    ON r.town_id = t.id
+                    ON j.town_id = t.id
                     WHERE j.company_id=? AND j.status=?''', (company_id, Status.ARCHIVED))
     if data:
-        return (JobAd.from_query_result(*row) for row in data)
+        job_ads = [JobAd.from_query_result(*row) for row in data]
+        job_ads_with_skills = []
+        for job in job_ads:
+            job.skill_requirements = get_all_skills_for_job_ad_id(job.id)
+            job_ads_with_skills.append(job)
+        return job_ads_with_skills
     else:
         return None
 
@@ -345,6 +355,3 @@ def make_job_ad_archived(job_ad_id:int, update_data=update_query):
     return update_data('''UPDATE job_ads
                         SET status=?
                         WHERE id= ?''', (Status.ARCHIVED, job_ad_id))
-
-def get_list_of_matches(id: int):
-    ...

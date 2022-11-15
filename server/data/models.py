@@ -80,7 +80,7 @@ class Role:
 class Skill(BaseModel):
     id: int | None
     name: str
-    stars: int  # not more than 5, not less than 1
+    stars: int 
     
     @classmethod
     def from_query_result(cls, id, name, stars):
@@ -165,12 +165,6 @@ class CompanyInfo(BaseModel):
     description: str
     successful_matches: int
 
-    # town_name: str
-    # email: str
-    # phone: str | None
-    # address: str | None
-    # active_job_ads: int
-
     @classmethod
     def from_query_result(cls, id, company_name, description, successful_matches):
         return cls(
@@ -190,10 +184,6 @@ class Company(BaseModel):
     address: str
     town_name: str
     successful_matches: int
-
-    # active_job_ads: int
-
-    # archived_job_ads: list[int]
 
     @classmethod
     def from_query_result(cls, id, user_name, company_name, description, email, phone, address,
@@ -230,7 +220,7 @@ class JobAd(BaseModel):
     max_salary: int
     work_place: str
     status: str
-    town_name: str  # if town_name not in towns, catch error
+    town_name: str
     views: int | None
     company_id: int | None
     skill_requirements: list[Skill] | None
@@ -335,7 +325,7 @@ class CompanyResponseModel(BaseModel):
 class PersonalCompanyResponseModel(BaseModel):
     company: Company
     active_job_ads: int
-    list_of_matches: list[int]
+    job_ads: list[JobAd]
 
 
 class ResumeWithoutDescriptionAndSalary(BaseModel):

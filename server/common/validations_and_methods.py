@@ -1,11 +1,5 @@
 from server.data.models import WorkPlace, Skill, Status, Town
 from server.data.database import read_query, update_query, read_query_single_element, insert_query
-'''
-validacii za kinti
-i vsichko keoto se setim
-i koeto se preizpolzva kato naprimer get town by id i tn i tn
-
-'''
 
 def validate_work_place(work_place:str):
     validation_work_places = [WorkPlace.HYBRID, WorkPlace.ONSITE, WorkPlace.REMOTE]
@@ -14,7 +8,7 @@ def validate_work_place(work_place:str):
     return True
 
 def validate_status(status:str):
-    validation_status = [Status.ACTIVE, Status.HIDDEN, Status.PRIVATE]
+    validation_status = [Status.ACTIVE, Status.HIDDEN, Status.PRIVATE, Status.ARCHIVED]
     if not status in validation_status:
         return False
     return True
