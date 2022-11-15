@@ -6,11 +6,7 @@ from server.common.responses import NotFound, Forbidden, Unauthorized, Success, 
 from server.data.models import Company, JobAd, Role, JobAdResponseModel
 from server.services import company_service, job_ad_service, professional_service, match_request_service, resume_service
 from server.services.job_ad_service import (add_skills,
-                                            return_skills_with_ids,
-                                            add_skill_to_job_ad, 
-                                            get_job_ad_by_id, 
-                                            get_all_skills_for_job_ad_id, 
-                                            all_active_job_ads, 
+                                            get_job_ad_by_id,
                                             update_job_ads_views,
                                             edit_job_ad_by_company_and_job_ad_ids)
 from server.services.user_service import get_company_name_by_id
@@ -113,13 +109,13 @@ def edit_job_ad_by_id(id: int, job_ad: JobAd, x_token: str = Header()):
     if not job_ad.skill_requirements:
         return BadRequest('You need to leave at least one skill to your job ad.')
     
-    if not validate_status(create_job_ad.status):
+    if not validate_status(job_ad.status):
         return BadRequest('The given status is incorrect!')
     
-    if not validate_work_place(create_job_ad.work_place):
+    if not validate_work_place(job_ad.work_place):
         return BadRequest('Invalid work place!')
 
-    if not validate_salary(create_job_ad.min_salary, create_job_ad.max_salary):
+    if not validate_salary(job_ad.min_salary, job_ad.max_salary):
         return BadRequest('Incorrect salary range!')
 
     if not job_ad.skill_requirements:

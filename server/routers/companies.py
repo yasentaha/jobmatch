@@ -3,9 +3,10 @@ from pydantic import BaseModel
 
 from server.common.auth import get_user_or_raise_401
 from server.common.responses import NotFound, Forbidden, Unauthorized, BadRequest, Success
-from server.data.models import Company, JobAd, CompanyInfo, CompanyResponseModel, PersonalCompanyResponseModel, CompanyMatchRequestResponse
+from server.data.models import Company,CompanyResponseModel, PersonalCompanyResponseModel, CompanyMatchRequestResponse
 from server.services.company_service import get_company_info_by_id, get_company_by_id, edit_company, get_all_companies
 from server.services.user_service import edit_user_info, get_town_id_by_name, valid_email
+from server.services.job_ad_service import get_all_active_job_ads_by_company_id, get_all_archived_job_ads_by_company_id
 from server.services import company_service, job_ad_service, match_request_service, user_service, resume_service, professional_service
 
 
@@ -42,17 +43,61 @@ def get_company_by_Id(id: int, x_token: str = Header()):
     if company is None:
         return NotFound(f'Company with ID: {id} not found!')
 
-    if user.id == id:
-        return PersonalCompanyResponseModel(
-            company= company,
-            active_job_ads=job_ad_service.get_number_of_all_active_job_ads_by_company_id(id),
-            list_of_matches=job_ad_service.get_list_of_matches(id)
-            )
+    if not user:
+        return Forbidden('Please log in!')
+    
+    return CompanyResponseModel(
+        company= company,
+        active_job_ads=job_ad_service.get_number_of_all_active_job_ads_by_company_id(id))
 
-    else:
-        return CompanyResponseModel(
-            company= company,
-            active_job_ads=job_ad_service.get_number_of_all_active_job_ads_by_company_id(id))
+
+@companies_router.get('/{id}/job_ads')
+def get_companies_active_job_ads_by_Id(id: int, x_token: str = Header()):
+    user = get_user_or_raise_401(x_token)
+
+    company = company_service.get_company_by_id(id)
+    
+    if not user:
+        return Unauthorized('Please log in!')
+    
+    if not company:
+        return Unauthorized(f'Company with ID: {id} not found!')
+    
+    job_ads = get_all_active_job_ads_by_company_id(id)
+
+    if not job_ads:
+        return NotFound(f'There are no active Job ads for company with ID: {id}')
+
+
+    return PersonalCompanyResponseModel(
+        company= company,
+        active_job_ads=job_ad_service.get_number_of_all_active_job_ads_by_company_id(id),
+        job_ads = job_ads)
+    
+@companies_router.get('/{id}/archived_job_ads')
+def get_companies_archived_job_ads_by_Id(id: int, x_token: str = Header()):
+    user = get_user_or_raise_401(x_token)
+
+    company = company_service.get_company_by_id(id)
+    
+    if not user:
+        return Unauthorized('Please log in!')
+    
+    if not company:
+        return Unauthorized(f'Company with ID: {id} not found!')
+    
+    if user.id == id:
+        archived_job_ads = get_all_archived_job_ads_by_company_id(id)
+
+    if not archived_job_ads:
+        return NotFound(f'There are no archived Job ads for company with ID: {id}')
+
+
+    return PersonalCompanyResponseModel(
+        company= company,
+        active_job_ads=job_ad_service.get_number_of_all_active_job_ads_by_company_id(id),
+        job_ads = archived_job_ads)
+    
 
 @companies_router.put('/{id}')
 def edit_company_by_id(id: int, company: Company, x_token: str = Header()):
