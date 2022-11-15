@@ -66,7 +66,6 @@ def get_town_id_by_name(town_name:str, read_data_func=database.read_query_single
     return town_id[0] if town_id else None
 
 
-#WE WILL USE THE ABOVE USER AND CONTACT IDS INTO THIS:
 def create_professional(user_id: int, 
                         first_name:str, 
                         last_name:str,
