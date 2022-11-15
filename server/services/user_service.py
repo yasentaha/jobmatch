@@ -202,11 +202,3 @@ def mandatory_fields_company(company_name:str, description: str, address:str):
     return None
 
 
-#ATTENTION: 
-#HOW TO HAVE A TRANSACTIONAL BEHAVIOR WHEN REGISTERING
-'''
-LEFT TO DO:
-- PASSWORD REGEX?? Username regex for space and asterix
-- ADMIN???
-- UNIT TESTS - users router + mandatory fields here
-'''
