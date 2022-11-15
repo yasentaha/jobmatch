@@ -1,6 +1,5 @@
 from server.data.database import read_query, update_query, insert_query, read_query_single_element
-from server.data.models import Company, CompanyInfo, JobAd, Status, Role
-from server.common.responses import BadRequest
+from server.data.models import Company, CompanyInfo, Role
 from mariadb import DataError, OperationalError
 
 
