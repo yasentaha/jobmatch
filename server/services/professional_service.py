@@ -1,5 +1,5 @@
 from server.data.database import read_query, insert_query, update_query
-from server.data.models import Professional, Resume, Status, ProfessionalInfo, Role
+from server.data.models import Professional, Role
 from server.common.responses import BadRequest
 from mariadb import DataError, OperationalError
 
@@ -56,30 +56,6 @@ def get_professional_by_id(id: int):
 
     return next((Professional.from_query_result(*row) for row in data), None)
 
-def get_professional_info_by_id(id: int):
-    data = read_query(
-        '''SELECT p.user_id, p.first_name, p.last_name, p.summary, p.busy
-                FROM professionals as p
-            WHERE p.user_id=?''', (id,))
-
-    return (ProfessionalInfo(id=user_id,first_name=first_name,last_name=last_name, summary=summary,
-                              busy=busy)
-            for user_id, first_name,last_name,summary, busy in data)
-
-def edit_professional_info(id:int,professional_info: ProfessionalInfo,update_data=None):
-    if update_data is None:
-        update_data = update_query
-
-    update_data(
-        '''UPDATE professionals
-            SET first_name = ? ,last_name=?,summary=?,busy=?
-             WHERE user_id = ?''', (professional_info.first_name, professional_info.last_name,
-                                    professional_info.summary,professional_info.busy,
-                                    id))
-
-    return ProfessionalInfo(user_id=professional_info.id,first_name=professional_info.first_name,
-                             last_name=professional_info.last_name,
-                             summary=professional_info.summary,busy=professional_info.busy)
 
 def edit_professional(id:int,professional: Professional,update_data=None):
     if update_data is None:
