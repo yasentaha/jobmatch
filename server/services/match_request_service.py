@@ -4,14 +4,14 @@ from server.data.database import insert_query, read_query, read_query_single_ele
 
 def initiate_match_request(requestor_id:int, resume_id:int, job_ad_id:int ,insert_data_func=insert_query):
     generated_id = insert_data_func(
-            'INSERT INTO match_requests(resume_id, job_ad_id, is_match, request_from) VALUES (?,?,?,?)',
+            'INSERT INTO match_requests(resume_id, job_ad_id, is_match, requestor_id) VALUES (?,?,?,?)',
             (resume_id, job_ad_id, 0, requestor_id))
     
     return generated_id
 
 def get_match_request_by_id(id:int, get_data_func = read_query) -> MatchRequest | None:
     data = get_data_func(
-        'SELECT id, resume_id, job_ad_id, request_from FROM match_requests WHERE id = ?',
+        'SELECT id, resume_id, job_ad_id, requestor_id FROM match_requests WHERE id = ?',
         (id,))
 
     return next((MatchRequest(id=id, resume_id=resume_id, job_ad_id=job_ad_id, requestor_id=requestor_id) for id, resume_id, job_ad_id, requestor_id in data), None)
@@ -25,7 +25,7 @@ def match_request_exists(id: int):
 
 def match_request_by_combined_key(resume_id:int, job_ad_id:int, get_data_func = read_query):
     data = get_data_func(
-        '''SELECT mr.id, mr.resume_id, mr.job_ad_id, request_from 
+        '''SELECT mr.id, mr.resume_id, mr.job_ad_id, requestor_id 
             FROM match_requests as mr 
             WHERE mr.resume_id = ? 
             AND mr.job_ad_id = ? 
@@ -36,7 +36,7 @@ def match_request_by_combined_key(resume_id:int, job_ad_id:int, get_data_func = 
 
 
 def its_a_match(id: int, update_data=update_query):
-    return update_data('''UPDATE match_requesets 
+    return update_data('''UPDATE match_requests 
                     SET is_match = ?
                     WHERE id = ?''', (1,id))
     
