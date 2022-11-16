@@ -1,7 +1,6 @@
-from datetime import date, datetime, timedelta
 from jose import jwt, JWTError
 from fastapi import HTTPException, status
-from server.data.models import Professional, Company, User
+from server.data.models import User
 from server.services.user_service import find_by_username
 from server.data.database import read_query
 
