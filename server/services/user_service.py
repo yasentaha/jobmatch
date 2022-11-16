@@ -1,12 +1,8 @@
-from server.data import database
 from server.data.database import insert_query, read_query, read_query_single_element, update_query
-from server.data.models import Professional, Company, Role,User
-from server.common.responses import BadRequest, Forbidden, NotFound, Success
+from server.common.validations_and_methods import valid_email, valid_username
+from server.data.models import  User
+from server.common.responses import BadRequest
 from mariadb import IntegrityError, DataError
-from datetime import date
-import re
-
-from server.data.models import Contact
 
 
 def _hash_password(password: str):
@@ -14,12 +10,13 @@ def _hash_password(password: str):
     return sha256(password.encode('utf-8')).hexdigest()
 
 
-def find_by_username(user_name: str, get_data_func = database.read_query) -> User | None:
+def find_by_username(user_name: str, get_data_func = read_query) -> User | None:
     data = get_data_func(
         'SELECT id, user_name, password, role FROM users WHERE user_name = ?',
         (user_name,))
 
     return next((User.from_query_result(*row) for row in data), None)
+
 
 def try_login(user_name: str, password: str) -> User | None:
     user = find_by_username(user_name)
@@ -37,7 +34,7 @@ def create_user(user_name: str,
                 town_id:int,
                 address:str=None,
                 phone:str=None, 
-                insert_data_func=database.insert_query) -> User | None:
+                insert_data_func=insert_query) -> User | None:
     
     password = _hash_password(password)
 
@@ -60,17 +57,11 @@ def create_user(user_name: str,
         return None
 
 
-def get_town_id_by_name(town_name:str, read_data_func=database.read_query_single_element) -> int:
-    town_id = (read_data_func('SELECT id from towns where name = ?', (town_name,)))
-
-    return town_id[0] if town_id else None
-
-
 def create_professional(user_id: int, 
                         first_name:str, 
                         last_name:str,
                         summary:str=None,  
-                        insert_data_func=database.insert_query) -> None:
+                        insert_data_func=insert_query) -> None:
     
     professional_id = insert_data_func(
             '''INSERT INTO professionals
@@ -83,7 +74,7 @@ def create_professional(user_id: int,
 def create_company(user_id: int, 
                         company_name:str, 
                         description:str,
-                        insert_data_func=database.insert_query) -> None:
+                        insert_data_func=insert_query) -> None:
     
     company_id = insert_data_func(
             '''INSERT INTO companies
@@ -92,7 +83,7 @@ def create_company(user_id: int,
                             description) VALUES (?,?,?)''',
             (user_id, company_name, description))
 
-def get_user_by_id(id:int, get_data_func = database.read_query) -> User | None:
+def get_user_by_id(id:int, get_data_func = read_query) -> User | None:
     data = get_data_func(
         'SELECT id, user_name, password, role FROM users WHERE id = ?',
         (id,))
@@ -116,7 +107,7 @@ def get_company_name_by_id(company_id:int) -> str:
 
     return company_name
 
-def edit_user_info(id: int, email:str, phone:str, address:str, town_id:int, update_data_func=database.update_query) -> int:
+def edit_user_info(id: int, email:str, phone:str, address:str, town_id:int, update_data_func=update_query) -> int:
     try:
         edited_info = update_data_func('''
                                     UPDATE users 
@@ -127,20 +118,7 @@ def edit_user_info(id: int, email:str, phone:str, address:str, town_id:int, upda
     except DataError:
         return False
 
-def valid_username(user_name: str):
-    '''Expects a user name as string, and if valid, it will return it, otherwise it will return None.'''
-    if len(user_name) < 2 or len(user_name) > 30:
-        return None
-    else:
-        return user_name
 
-def valid_email(email: str):
-    '''Expects an email address as string, and if valid, it will return it, otherwise it will return None.'''
-    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-    if (re.fullmatch(regex, email)):
-        return email
-    else:
-        return None
 
 
 def password_confirmation(password:str, confirm_password:str):
