@@ -25,56 +25,24 @@ class User(BaseModel):
             role=role)
 
 
-class Contact(BaseModel):
-    id: int | None
-    email: str
-    phone: str | None
-    address: str
-    town_id: int
-
-
-class ProfessionalInfo(BaseModel):
-    id: int | None
-    first_name: str
-    last_name: str
-    summary: str | None
-    busy: bool
-
-
-class Professional(BaseModel):
-    id: int | None
-    user_name: str
-    email: str
-    phone: str | None
-    address: str | None
-    town_name: str
-    first_name: str
-    last_name: str
-    summary: str | None
-    busy: bool
-
-    # active_resumes: int #number of active resumes
-    # hidden_resumes: list[int]
-
-    @classmethod
-    def from_query_result(cls, id, user_name, email, phone, address, town_name, first_name, last_name, summary, busy):
-        return cls(
-            id=id,
-            user_name=user_name,
-            email=email,
-            phone=phone,
-            address=address,
-            town_name=town_name,
-            first_name=first_name,
-            last_name=last_name,
-            summary=summary,
-            busy=busy)
-
-
 class Role:
     ADMIN = 'admin'
     PROFESSIONAL = 'professional'
     COMPANY = 'company'
+
+
+class WorkPlace:
+    REMOTE = 'Remote'
+    ONSITE = 'Onsite'
+    HYBRID = 'Hybrid'
+
+
+class Status:
+    ACTIVE = 'Active'
+    HIDDEN = 'Hidden'
+    PRIVATE = 'Private'
+    MATCHED = 'Matched'
+    ARCHIVED = 'Archived'
 
 
 class Skill(BaseModel):
@@ -90,18 +58,31 @@ class Skill(BaseModel):
             stars=stars)
 
 
-class WorkPlace:
-    REMOTE = 'Remote'
-    ONSITE = 'Onsite'
-    HYBRID = 'Hybrid'
+class Professional(BaseModel):
+    id: int | None
+    user_name: str
+    email: str
+    phone: str | None
+    address: str | None
+    town_name: str
+    first_name: str
+    last_name: str
+    summary: str | None
+    busy: bool
 
-
-class Status:
-    ACTIVE = 'Active'
-    HIDDEN = 'Hidden'
-    PRIVATE = 'Private'
-    MATCHED = 'Matched'
-    ARCHIVED = 'Archived'
+    @classmethod
+    def from_query_result(cls, id, user_name, email, phone, address, town_name, first_name, last_name, summary, busy):
+        return cls(
+            id=id,
+            user_name=user_name,
+            email=email,
+            phone=phone,
+            address=address,
+            town_name=town_name,
+            first_name=first_name,
+            last_name=last_name,
+            summary=summary,
+            busy=busy)
 
 
 class ProfessionalRegisterData(BaseModel):
@@ -155,23 +136,6 @@ class CreateResume(BaseModel):
     status: str
     town_name: str
     skills: list[Skill]
-    # skill_name: str
-    # stars: int
-
-
-class CompanyInfo(BaseModel):
-    id: int | None
-    company_name: str
-    description: str
-    successful_matches: int
-
-    @classmethod
-    def from_query_result(cls, id, company_name, description, successful_matches):
-        return cls(
-            id=id,
-            company_name=company_name,
-            description=description,
-            successful_matches=successful_matches)
 
 
 class Company(BaseModel):
@@ -257,70 +221,20 @@ class MatchRequest(BaseModel):
             requestor_id=requestor_id)
 
 
-class Town(BaseModel):
-    SOFIA = 'Sofia'
-    PLOVDIV = 'Plovdiv'
-    RUSE = 'Ruse'
-    VARNA = 'Varna'
-    BURGAS = 'Burgas'
-    VIDIN = 'Vidin'
-    MONTANA = 'Montana'
-    PERNIK = 'Pernik'
-    KIUSTENDIL = 'Kiustendil'
-    BLAGOEVGRAD = 'Blagoevgrad'
-    VRATSA = 'Vratsa'
-    PAZARDZHIK = 'Pazardzhik'
-    SMOLIAN = 'Smolian'
-    PLEVEN = 'Pleven'
-    LOVECH = 'Lovech'
-    VELIK0TARNOVO = 'Veliko tarnovo'
-    GABROVO = 'Gabrovo'
-    STARAZAGORA = 'Stara zagora'
-    HASKOVO = 'Haskovo'
-    KARDZHALI = 'Kardzhali'
-    TARGOVISHTE = 'Targovishte'
-    SLIVEN = 'Sliven'
-    YAMBOL = 'Yambol'
-    SILISTRA = 'Silistra'
-    RAZGRAD = 'Razgrad'
-    SHUMEN = 'Shumen'
-    DOBRICH = 'Dobrich'
-
-    all_towns = [SOFIA, PLOVDIV, RUSE, VARNA, BURGAS, VIDIN, MONTANA, PERNIK, KIUSTENDIL, BLAGOEVGRAD, VRATSA,
-                 PAZARDZHIK, SMOLIAN, PLEVEN, LOVECH, VELIK0TARNOVO, GABROVO, STARAZAGORA, HASKOVO, KARDZHALI,
-                 TARGOVISHTE, SLIVEN, YAMBOL, SILISTRA, RAZGRAD, SHUMEN, DOBRICH]
-
-
-class ProfessionalResponse(BaseModel):
-    id: int
-    user_name: str
-    first_name: str
-    last_name: str
-    summary: str | None
-    email: str
-    phone: str | None
-    address: str
-    town_name: str
-
-    @classmethod
-    def from_query_result(cls, id, user_name, first_name, last_name, summary, email,
-                          phone, address, town_name):
-        return cls(
-            id=id,
-            user_name=user_name,
-            first_name=first_name,
-            last_name=last_name,
-            summary=summary,
-            email=email,
-            phone=phone,
-            address=address,
-            town_name=town_name)
-
+#RESPONSE MODELS
+class ProfessionalResponseModel(BaseModel):
+    professional: Professional
+    active_resumes: int
 
 class CompanyResponseModel(BaseModel):
     company: Company
     active_job_ads: int
 
+
+class PersonalProfessionalResponseModel(BaseModel):
+    professional: Professional
+    active_resumes: int
+    list_of_matches: list[int]
 
 class PersonalCompanyResponseModel(BaseModel):
     company: Company
