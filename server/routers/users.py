@@ -1,32 +1,29 @@
-from fastapi import APIRouter, Header
-from server.common.auth import get_user_or_raise_401, create_token
-from server.common.responses import BadRequest, Forbidden, NotFound, Success
-from server.data.models import LoginData, User, Contact, Company, Professional, CompanyInfo, ProfessionalInfo, CompanyRegisterData, ProfessionalRegisterData
-from server.data.models import ProfessionalResponse
+from fastapi import APIRouter
+from server.common.auth import create_token
+from server.common.responses import BadRequest, NotFound, Success
+from server.data.models import LoginData, CompanyRegisterData, ProfessionalRegisterData
 from server.services import user_service, professional_service, company_service
-from server.services import mailjet_service
-
+from server.common import mailjet_service
+from server.common.validations_and_methods import get_town_id_by_name
 
 users_router = APIRouter(prefix='/users')
 
 @users_router.post('/professionals/register')
-def register_professional(data: ProfessionalRegisterData, 
-                        mandatory_user=user_service.mandatory_fields_user_contact,
-                        mandatory_professional=user_service.mandatory_fields_professional):
+def register_professional(data: ProfessionalRegisterData):
 
-    mandatory_response_user = mandatory_user(data.user_name, data.password, data.confirm_password, data.email, data.town_name)
+    mandatory_response_user = user_service.mandatory_fields_user_contact(data.user_name, data.password, data.confirm_password, data.email, data.town_name)
     
     if mandatory_response_user:
         return mandatory_response_user
     
-    mandatory_response_professional = mandatory_professional(data.first_name, data.last_name)
+    mandatory_response_professional = user_service.mandatory_fields_professional(data.first_name, data.last_name)
 
     if mandatory_response_professional:
         return mandatory_response_professional
 
     role = 'professional'
 
-    town_id = user_service.get_town_id_by_name(data.town_name)
+    town_id = get_town_id_by_name(data.town_name)
     if not town_id:
         return NotFound(f'Town {data.town_name} is not a valid Bulgarian District Town name')
     
@@ -48,24 +45,23 @@ def register_professional(data: ProfessionalRegisterData,
         return Success(f'Professional account created for {data.first_name} {data.last_name}. Please log in to continue.')
     #else think if the above may not be successful, if yes, delete the row in users (rollback)
 
-@users_router.post('/companies/register')
-def register_company(data: CompanyRegisterData,
-                    mandatory_user=user_service.mandatory_fields_user_contact,
-                    mandatory_company=user_service.mandatory_fields_company):
 
-    mandatory_response_user = mandatory_user(data.user_name, data.password, data.confirm_password, data.email, data.town_name)
+@users_router.post('/companies/register')
+def register_company(data: CompanyRegisterData):
+
+    mandatory_response_user = user_service.mandatory_fields_user_contact(data.user_name, data.password, data.confirm_password, data.email, data.town_name)
     
     if mandatory_response_user:
         return mandatory_response_user
 
-    mandatory_response_company = mandatory_company(data.company_name, data.description, data.address)
+    mandatory_response_company = user_service.mandatory_fields_company(data.company_name, data.description, data.address)
 
     if mandatory_response_company:
         return mandatory_response_company
 
     role = 'company'
 
-    town_id = user_service.get_town_id_by_name(data.town_name)
+    town_id = get_town_id_by_name(data.town_name)
     if not town_id:
         return NotFound(f'Town {data.town_name} is not a valid Bulgarian District Town name')
 
