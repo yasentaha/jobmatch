@@ -17,7 +17,7 @@ def read_query(sql: str, sql_params=()):
         cursor = conn.cursor()
         cursor.execute(sql, sql_params)
 
-        return list(cursor) #cursor is a tuple, so a list of tuples
+        return list(cursor)
 
 def read_query_single_element(sql: str, sql_params=()):
     with _get_connection() as conn:
