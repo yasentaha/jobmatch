@@ -28,7 +28,21 @@
 # Table of Contents
 
 - [About the Project](#about-the-project)
+  * [Summary](#summmary)
+  * [Team](#team)
   * [Technologies](#technologies)
+  * [Database](#database)
+  * [Application Structure](#application-structure)
+- [Getting Started](#getting-started)
+  * [Prerequisites](#prerequisites)
+  * [Executing](#executing)
+- [Usage](#getting-started)
+  * [FastAPI Swagger](#fastapi-swagger-docs)
+  * [Features](#features)
+  * [Room For Improvement](#room-for-improvement)
+- [Get In Touch](#get-in-touch)
+
+
 
 <br/>
 
@@ -42,8 +56,6 @@ Basically, two types of users can access the public part and register or login -
 - Companies can post job-ads, search for professionals or their resumes and initiate match requests
 - Professionals can post resumes, search for companies or their job ads and initiate match requests
 - Both can accept or reject match requests or get instant matches (like tinder).
-
-<br/>
 
 > **The name comes from the bulgarian word **jumbish** - slang for spectacle, show (in a chaotic way).*
 
@@ -80,6 +92,7 @@ For this project, the use of the multi-tier (n-tier) atchitecture was chosen, wh
 - data - containing the connection to the MariaDB server and models for which the FastAPI pydantic library is imported
 - services - all of the functionality that operates on the database and creates the above mentioned models
 - routers - defining all of the endpoints of our application
+
 </br>
 </br>
 
@@ -195,7 +208,7 @@ Email Notification:
 </br>
 
 
-# Get in touch
+# Get In Touch
 You can to send email to any of us from the team - Dimitar, Krasimir, Yasen or use our "company" one at jombatch@gmail.com.
 
 Thank you for your interest in our humble project!
