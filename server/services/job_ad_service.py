@@ -1,17 +1,9 @@
 from server.data.models import JobAd, Resume, Skill, Status
-from server.common.validations_and_methods import (add_skill,
-                                                   parse_salary_range,
+from server.common.validations_and_methods import (parse_salary_range,
                                                    parse_skills,
-                                                   remove_under_from_skill,
                                                    salary_range_threshold,
-                                                   validate_stars,
-                                                   validate_work_place,
-                                                   add_skills,
                                                    return_skills_with_ids,
-                                                   skill_exists,
-                                                   get_skill_id_by_name,
-                                                   get_town_id_by_name,
-                                                   get_town_name_by_id)
+                                                   get_town_id_by_name)
 from server.data.database import (insert_query, 
                                   read_query,
                                   read_query_single_element, update_query)
@@ -35,6 +27,7 @@ def create_job_ad(company_id: int, job_ad: JobAd, insert_data=None):
 
     return get_job_ad_by_id(generated_job_ad_id)
 
+
 def get_job_ad_by_id(job_ad_id: int):
     
     data = read_query(
@@ -54,7 +47,8 @@ def get_job_ad_by_id(job_ad_id: int):
     else:
         return None
 
-def edit_job_ad_by_company_and_job_ad_ids(company_id: int, job_ad_id: int, new_job_ad: JobAd,
+
+def edit_job_ad_by_job_ad_id(job_ad_id: int, new_job_ad: JobAd,
                                                  update_data=None):
     if update_data is None:
         update_data = update_query
@@ -64,9 +58,9 @@ def edit_job_ad_by_company_and_job_ad_ids(company_id: int, job_ad_id: int, new_j
     update_data(
         '''UPDATE job_ads
             SET title=?, description=?, min_salary=?, max_salary=?,work_place=?,status=?,town_id=?
-             WHERE company_id = ? AND job_ads.id=?''',
+             WHERE id=?''',
         (new_job_ad.title, new_job_ad.description, new_job_ad.min_salary, new_job_ad.max_salary, new_job_ad.work_place,
-         new_job_ad.status, town_id, company_id, job_ad_id))
+         new_job_ad.status, town_id, job_ad_id))
 
     old_job_ad_skill_requirements = get_all_skills_for_job_ad_id(job_ad_id)
 
@@ -78,8 +72,8 @@ def edit_job_ad_by_company_and_job_ad_ids(company_id: int, job_ad_id: int, new_j
 
     return get_job_ad_by_id(job_ad_id)
 
-def delete_all_skills_from_job_ad(job_ad_id:int):
 
+def delete_all_skills_from_job_ad(job_ad_id:int):
     update_query('''DELETE from job_ads_skills where job_ad_id = ?''', (job_ad_id,))
 
 
@@ -129,6 +123,7 @@ def all_active_job_ads(search = None, search_by: str | None = None, threshold: i
         job_ad.skill_requirements = get_all_skills_for_job_ad_id(job_ad.id)
 
     return job_ads
+
 
 def get_all_active_by_salary_range(salary_range: str, threshold: int | None):
     if not threshold:
@@ -289,11 +284,11 @@ def get_all_active_job_ads_by_company_id(company_id: int):
                     WHERE j.company_id=? AND j.status=?''', (company_id, Status.ACTIVE))
     if data:
         job_ads = [JobAd.from_query_result(*row) for row in data]
-        job_ads_with_skills = []
+
         for job in job_ads:
             job.skill_requirements = get_all_skills_for_job_ad_id(job.id)
-            job_ads_with_skills.append(job)
-        return job_ads_with_skills
+
+        return job_ads
     else:
         return None
 
@@ -309,13 +304,14 @@ def get_all_archived_job_ads_by_company_id(company_id: int):
                     WHERE j.company_id=? AND j.status=?''', (company_id, Status.ARCHIVED))
     if data:
         job_ads = [JobAd.from_query_result(*row) for row in data]
-        job_ads_with_skills = []
+
         for job in job_ads:
             job.skill_requirements = get_all_skills_for_job_ad_id(job.id)
-            job_ads_with_skills.append(job)
-        return job_ads_with_skills
+
+        return job_ads
     else:
         return None
+
 
 def get_number_of_all_active_job_ads_by_company_id(company_id: int):
     data = read_query(
@@ -324,6 +320,7 @@ def get_number_of_all_active_job_ads_by_company_id(company_id: int):
                     WHERE j.company_id=? AND j.status=?''', (company_id, Status.ACTIVE))
     
     return len(data)
+
 
 def get_all_skills_for_job_ad_id(job_ad_id: int):
     data = read_query(
@@ -336,6 +333,7 @@ def get_all_skills_for_job_ad_id(job_ad_id: int):
     return [Skill(id=id, name=name, stars=stars)
             for id, name, stars in data]
 
+
 def update_job_ads_views(id: int):
     current_job_ads_view = (read_query_single_element('SELECT views from job_ads where id=?', (id,)))[0]
 
@@ -345,7 +343,6 @@ def update_job_ads_views(id: int):
 
 
 def add_skill_to_job_ad(job_ad_id: int, skill: Skill):
-
     insert_query(
         '''INSERT INTO job_ads_skills(job_ad_id, skill_id, stars) VALUES (?,?,?)''',
         (job_ad_id, skill.id, skill.stars))
