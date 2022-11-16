@@ -71,20 +71,20 @@ def get_company_info_by_id(id: int):
     return next((CompanyInfo.from_query_result(*row) for row in data), None)
 
 
-def edit_company_info(id:int,company_info: CompanyInfo,update_data=None):
-    if update_data is None:
-        update_data = update_query
-    try:
-        update_data(
-            '''UPDATE companies
-                SET company_name = ? ,description = ?, successful_matches = ?
-                WHERE user_id = ?''', (company_info.company_name, company_info.description,
-                                        company_info.successful_matches,id))
+# def edit_company_info(id:int,company_info: CompanyInfo,update_data=None):
+#     if update_data is None:
+#         update_data = update_query
+#     try:
+#         update_data(
+#             '''UPDATE companies
+#                 SET company_name = ? ,description = ?, successful_matches = ?
+#                 WHERE user_id = ?''', (company_info.company_name, company_info.description,
+#                                         company_info.successful_matches,id))
 
-        return True
+#         return True
     
-    except DataError:
-        return False
+#     except DataError:
+#         return False
 
 def edit_company(id:int,company_info: CompanyInfo,update_data=None):
     if update_data is None:

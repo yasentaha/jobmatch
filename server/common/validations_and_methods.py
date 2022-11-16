@@ -1,5 +1,5 @@
 from server.data.models import WorkPlace, Skill, Status, Town
-from server.data.database import read_query, update_query, read_query_single_element, insert_query
+from server.data import database
 
 def validate_work_place(work_place:str):
     validation_work_places = [WorkPlace.HYBRID, WorkPlace.ONSITE, WorkPlace.REMOTE]
@@ -64,31 +64,31 @@ def return_skills_with_ids(skills: list[Skill]) -> list[Skill]:
 
     return skills_with_ids
 
-def add_skill(skill_name: str):
-    generated_id = insert_query(
+def add_skill(skill_name: str, insert_data_func=database.insert_query):
+    generated_id = insert_data_func(
         '''INSERT INTO skills(name) VALUES (?)''', (skill_name,))
 
     return generated_id
 
-def skill_exists(skill_name:str) -> bool:
+def skill_exists(skill_name:str, read_data_func=database.read_query) -> bool:
     skill_name = skill_name.lower()
-    data = read_query('SELECT 1 from skills where name = ?', (skill_name,))
+    data = read_data_func('SELECT 1 from skills where name = ?', (skill_name,))
 
     return any(data)
 
-def get_skill_id_by_name(skill_name:str) -> int:
-    skill_id = (read_query_single_element('SELECT id from skills where name = ?', (skill_name,)))
+def get_skill_id_by_name(skill_name:str, read_data_func=database.read_query_single_element) -> int:
+    skill_id = (read_data_func('SELECT id from skills where name = ?', (skill_name,)))
 
     return skill_id[0] if skill_id else None
 
-def get_town_name_by_id(town_id: int):
-    data = read_query('''SELECT t.name
+def get_town_name_by_id(town_id: int, read_data_func=database.read_query):
+    town_name = read_data_func('''SELECT t.name
     FROM towns as t
-    WHERE t.id=?''', (town_id,))[0]
+    WHERE t.id=?''', (town_id,))
 
-    return data
+    return town_name[0] if town_name else None
 
-def get_town_id_by_name(town_name: str) -> int:
-    town_id = (read_query_single_element('SELECT id from towns where name = ?', (town_name,)))[0]
+def get_town_id_by_name(town_name:str, read_data_func=database.read_query_single_element) -> int:
+    town_id = (read_data_func('SELECT id from towns where name = ?', (town_name,)))
 
-    return town_id
+    return town_id[0] if town_id else None
