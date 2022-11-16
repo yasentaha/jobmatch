@@ -28,7 +28,7 @@
 # Table of Contents
 
 - [About the Project](#about-the-project)
-  * [Summary](#summmary)
+  * [Summary](#summary)
   * [Team](#team)
   * [Technologies](#technologies)
   * [Database](#database)
@@ -128,7 +128,7 @@ pip install python-jose[cryptography]
 
 **MailJet** - Third-party API for sending email notifications
 ```
-pip install mailjet
+pip install mailjet-rest
 ```
 </br>
 
@@ -167,14 +167,14 @@ This should appear:
 - for Professionals by name and town name
 - for Resumes and Job-Ads by salary range - you can add a threshold and the salary range will be from minus the threshold to plus the threshold
 - for Resumes and Job-Ads by location where you will get results for all On-site documents plus the ones that are Remote and Hybrid
-- for Resumes and Job-Ads by skills/requirements where it can be a non-combined or combined search; let's say you want to search for the skills "Python" and "Jango" and the first will return Resumes/Job-Ads with either or both and the second only having both
+- for Resumes and Job-Ads by skills/requirements where it can be a non-combined or combined search; let's say you want to search for the skills "Python" and "SQL" and the first will return Resumes/Job-Ads with either or both and the second only having both
 - for Resumes by a Job-Ad where it will look for skill-matching, preffered work-place and all salary-range within the limits of the Job-Ad
 - for Job-Ads by a Resume - pretty much the same as above, but it will not put an upper limit for the salary range (no employee will be mad if they pay them more than they want)
 
 Here's what the search by skills, combined looks like:
 
 Endpoint:
-http://127.0.0.1:8000/resumes/?search_by=skills&search=python,jango&combined=true
+http://127.0.0.1:8000/resumes/?search_by=skills&search=python,sql&combined=true
 (however, better to use the above linked swagger)
 
 Request:
