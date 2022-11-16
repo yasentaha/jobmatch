@@ -6,7 +6,7 @@ from server.services.user_service import edit_user_info
 from server.common.validations_and_methods import get_town_id_by_name, valid_email
 from server.services.job_ad_service import get_all_active_job_ads_by_company_id, get_all_archived_job_ads_by_company_id
 from server.services import company_service, job_ad_service, match_request_service, user_service, resume_service, professional_service
-from server.common.mailjet_service import send_its_a_match
+from server.common.mailjet_service import send_its_a_match, send_rejection_email
 
 
 companies_router = APIRouter(prefix='/companies')
@@ -149,7 +149,7 @@ def get_match_requests(id: int, x_token: str = Header(None)):
 
 
 @companies_router.put('/{id}/match_requests/{match_request_id}')
-def match_resume(id: int, match_request_id: int, x_token: str = Header(None)):
+def accept_match_request(id: int, match_request_id: int, x_token: str = Header(None)):
     user = get_user_or_raise_401(x_token)
 
     if not user:
@@ -182,5 +182,32 @@ def match_resume(id: int, match_request_id: int, x_token: str = Header(None)):
 
     job_ad_service.make_job_ad_archived(match_request.job_ad_id)
 
-    # send_its_a_match(professional.email, professional_full_name, resume.title, company.company_name, job_ad.title, False)
+    send_its_a_match(professional.email, professional_full_name, resume.title, company.company_name, job_ad.title, False)
     return Success(f"You successfully matched {professional_full_name}'s Resume!")
+
+
+@companies_router.delete('/{id}/match_requests/{match_request_id}')
+def reject_match_request(id: int, match_request_id: int, x_token: str = Header(None)):
+    user = get_user_or_raise_401(x_token)
+
+    if not user:
+        return Unauthorized('Please log in!')
+
+    if user.id != id:
+        return Forbidden('You cannot view the Match Requests of others.')
+
+    if not match_request_service.company_owns_match_request(user.id, match_request_id):
+        return Forbidden('You cannot reject this match request!')
+
+    company = company_service.get_company_by_id(id)
+
+    match_request = match_request_service.get_match_request_by_id(match_request_id)
+    
+    resume = resume_service.get_resume_by_id(match_request.resume_id)
+    
+    professional = professional_service.get_professional_by_id(match_request.requestor_id)
+
+    if match_request_service.delete_match_request(match_request_id):
+        send_rejection_email(professional.email, f'{professional.first_name} {professional.last_name}', 
+                            resume.title, company.company_name)
+        return Success(f'Match request from {user_service.get_company_name_by_id(match_request.requestor_id)} rejected!')

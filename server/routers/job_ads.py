@@ -191,10 +191,14 @@ def send_match_request(id: int, resume_id: int, x_token= Header(None)):
 
             job_ad_service.make_job_ad_archived(job_ad.id)
 
-            # send_its_a_match(professional, professional)
+            send_its_a_match(professional.email, f'{professional.first_name} {professional.last_name}', 
+                                            resume.title, company.company_name, job_ad.title, False)
+            # send_its_a_match(company.email, company.company_name, job_ad.title, professional_full_name,
+            #                 resume.title, True)
             return Success(f'Instant Match!')
     
     else:
         match_request_service.initiate_match_request(user.id, resume.id, job_ad.id)
-        #send email to Company
+        # send_match_request_email(company.email, company.company_name, job_ad.title, 
+        # f'{professional.first_name} {professional.last_name}', resume, True)
         return Success(f'Your Match Request was successfully sent to {company.company_name}!')
