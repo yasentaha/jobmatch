@@ -1,33 +1,13 @@
-from sqlite3 import OperationalError
-from server.common.responses import Success, BadRequest, NotFound
-from server.data.models import Resume, Status, Skill, CreateResume, Role, JobAd, ResumeWithoutDescriptionAndSalary
+from server.common.responses import Success, BadRequest
+from server.data.models import Resume, Status, Skill, CreateResume, JobAd, ResumeWithoutDescriptionAndSalary
 from server.data.database import read_query, insert_query, update_query, read_query_single_element
-from server.services.professional_service import get_professional_by_id
 from server.services.job_ad_service import get_job_ad_by_id
-from server.common.validations_and_methods import (add_skill,
-                                                   parse_salary_range,
+from server.common.validations_and_methods import (parse_salary_range,
                                                    parse_skills,
-                                                   remove_under_from_skill,
                                                    salary_range_threshold,
-                                                   validate_stars,
-                                                   validate_work_place,
-                                                   add_skills,
                                                    return_skills_with_ids,
-                                                   skill_exists,
-                                                   get_skill_id_by_name,
-                                                   get_town_id_by_name,
-                                                   get_town_name_by_id)
+                                                   get_town_id_by_name)
 
-
-# def all_active_resumes_without_job_salary_and_description_by_id(id: int):
-#     data = read_query(
-#         '''SELECT r.id, r.title, r.work_place, r.status, r.town_id
-#                 FROM resumes as r
-#                 WHERE r.professional_id=? AND r.status=?''', (id, f'%{Status.ACTIVE}%'))
-
-#     return (Resume(id=id, title=title, description='None', min_salary=0, max_salary=0,
-#                    work_place=work_place, status=status, town_id=town_id, main=main)
-#             for id, title, description, min_salary, max_salary, work_place, status, town_id, main in data)
 
 def all_active_resumes_without_job_salary_and_description_by_professional_id(professional_id: int):
     data = read_query(
@@ -326,8 +306,7 @@ def get_resume_by_id(resume_id: int) -> Resume:
         return None
 
 
-def edit_resume_by_professional_id_and_resume_id(professional_id: int, resume_id: int, new_resume: Resume,
-                                                 update_data=None):
+def edit_resume_by_id(resume_id: int, new_resume: Resume, update_data=None):
     if update_data is None:
         update_data = update_query
 
@@ -336,9 +315,9 @@ def edit_resume_by_professional_id_and_resume_id(professional_id: int, resume_id
     update_data(
         '''UPDATE resumes
             SET title=?, description=?, min_salary=?, max_salary=?,work_place=?,status=?,town_id=?,main=?
-             WHERE professional_id = ? AND resumes.id=?''',
+             WHERE id=?''',
         (new_resume.title, new_resume.description, new_resume.min_salary, new_resume.max_salary, new_resume.work_place,
-         new_resume.status, town_id, new_resume.main, professional_id, resume_id))
+         new_resume.status, town_id, new_resume.main, resume_id))
 
     old_resume_skills = get_all_resume_skills_by_id(resume_id)
 
@@ -369,6 +348,19 @@ def get_all_active_resumes_by_professional_id(professional_id: int):
     else:
         return None
 
+def get_all_resumes_by_professional_id(professional_id: int):
+    data = read_query(
+        '''SELECT r.id, r.title, r.description, r.min_salary, r.max_salary, 
+                    r.work_place, r.main, r.status, t.name, r.professional_id
+                    FROM resumes as r
+                    LEFT JOIN
+                    towns as t
+                    ON r.town_id = t.id
+                    WHERE r.professional_id=?''', (professional_id,))
+    if data:
+        return (Resume.from_query_result(*row) for row in data)
+    else:
+        return None
 
 
 def get_all_archived_resumes_by_professional_id(professional_id: int):
@@ -397,17 +389,12 @@ def get_all_resume_skills_by_id(resume_id: int):
 def get_number_of_all_active_resumes(professional_id: int):
     data = read_query(
         '''SELECT r.id FROM resumes as r 
-        WHERE r.professional_id=? AND r.status=?''', (professional_id, f'%{Status.ACTIVE}%',))
+        WHERE r.professional_id=? AND r.status=?''', (professional_id, Status.ACTIVE))
 
     return len(data)
 
 
 def add_skill_to_resume(resume_id: int, skill: Skill):
-    # auto_increment_id = insert_query(
-    #     '''INSERT INTO skills(name) VALUES (?)''', (skill.name))
-
-    # skill.id = auto_increment_id
-
     insert_query(
         '''INSERT INTO resumes_skills(resume_id, skill_id, stars) VALUES (?,?,?)''',
         (resume_id, skill.id, skill.stars))
@@ -429,44 +416,6 @@ def change_resume_main(professional_id:int):
              WHERE professional_id = ? and main=1''',
         (professional_id,))
 
-def not_exist_skill(professional_id: int, resume_id: int, skill: Skill):
-    data = read_query(
-        '''SELECT s.name FROM resumes as r
-        LEFT JOIN resumes_skills rs on r.id = rs.resume_id
-        LEFT JOIN skills s on rs.skill_id = s.id
-        WHERE r.professional_id=? AND r.id=?''', (professional_id, resume_id))
-
-    for name in data:
-        if skill.name.lower() == name.lower():
-            return False
-
-    return True
-
-
-def search_all_active_job_ads(search: str | None = None, search_by: str | None = None):
-    if search is None:
-        data = read_query(
-            '''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, j.work_place, j.status, j.views, t.name
-            FROM   
-                job_ads AS j
-            LEFT JOIN
-                towns AS t ON j.town_id=t.id
-            WHERE j.status=?''', (f'{Status.ACTIVE}',))
-    else:
-        try:
-
-            data = read_query(
-                '''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, j.work_place, j.status, j.views, t.name
-                FROM   job_ads AS j
-                LEFT JOIN towns AS t ON j.town_id=t.id
-                WHERE j.status=? AND j.{search_by} LIKE ?''', (f'{Status.ACTIVE}', f'%{search}%'))
-
-        except OperationalError:
-            return BadRequest('Invalid search_by query.')
-
-    return (JobAd.from_query_result(*row) for row in data)
 
 
 
-def sort(professionals, reverse):
-    return None
