@@ -1,5 +1,6 @@
-from server.data.models import WorkPlace, Skill, Status, Town
+from server.data.models import WorkPlace, Skill, Status
 from server.data import database
+import re
 
 def validate_work_place(work_place:str):
     validation_work_places = [WorkPlace.HYBRID, WorkPlace.ONSITE, WorkPlace.REMOTE]
@@ -7,15 +8,19 @@ def validate_work_place(work_place:str):
         return False
     return True
 
-def validate_status(status:str):
-    validation_status = [Status.ACTIVE, Status.HIDDEN, Status.PRIVATE, Status.ARCHIVED]
+def validate_status(status:str, for_job_ad: bool):
+    validation_status = []
+    if for_job_ad:
+        validation_status = [Status.ACTIVE, Status.ARCHIVED]
+    else:
+        validation_status = [Status.ACTIVE, Status.HIDDEN, Status.PRIVATE]
+    
     if not status in validation_status:
         return False
     return True
 
 
 def parse_salary_range(salary_range:str):
-    #IN ROUTER VALIDATION
     min_salary, max_salary = (int(min_max) for min_max in salary_range.split('-'))
     return min_salary, max_salary
 
@@ -92,3 +97,19 @@ def get_town_id_by_name(town_name:str, read_data_func=database.read_query_single
     town_id = (read_data_func('SELECT id from towns where name = ?', (town_name,)))
 
     return town_id[0] if town_id else None
+
+
+def valid_username(user_name: str):
+    '''Expects a user name as string, and if valid, it will return it, otherwise it will return None.'''
+    if len(user_name) < 2 or len(user_name) > 30:
+        return None
+    else:
+        return user_name
+
+def valid_email(email: str):
+    '''Expects an email address as string, and if valid, it will return it, otherwise it will return None.'''
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    if (re.fullmatch(regex, email)):
+        return email
+    else:
+        return None
