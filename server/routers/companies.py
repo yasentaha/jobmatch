@@ -141,11 +141,11 @@ def get_match_requests(id: int, x_token: str = Header(None)):
     if not match_requests:
         return NotFound('There are currently no match requests waiting for you.')
 
-    return (CompanyMatchRequestResponse(match_request.id, 
-                                            user_service.get_professional_fullname_by_id(match_request.requestor_id),
-                                            resume_service.get_resume_by_id(match_request.resume_id,
-                                            job_ad_service.get_job_ad_by_id(match_request.job_ad_id
-                                            ))) for match_request in match_requests)
+    return (CompanyMatchRequestResponse(id=match_request.id, 
+                                            professional_name=user_service.get_professional_fullname_by_id(match_request.requestor_id),
+                                            resume=resume_service.get_resume_by_id(match_request.resume_id),
+                                            job_ad=job_ad_service.get_job_ad_by_id(match_request.job_ad_id
+                                            )) for match_request in match_requests)
 
 
 @companies_router.put('/{id}/match_requests/{match_request_id}')
