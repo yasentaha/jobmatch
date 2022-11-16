@@ -166,7 +166,8 @@ def send_match_request(id: int, job_ad_id:int, x_token= Header(None)):
 
             send_its_a_match(professional.email, professional_full_name, resume.title, company.company_name,
                             job_ad.title, False)
-            #SEND TO COMPANY AS WELL
+            # send_its_a_match(company.email, company.company_name, job_ad.title, professional_full_name,
+            #                 resume.title, True)
             return Success(f'Instant Match!')
     else:
         match_request_service.initiate_match_request(user.id, id, job_ad_id)

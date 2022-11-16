@@ -133,7 +133,7 @@ def get_match_requests(id: int, x_token: str = Header(None)):
 
 
 @professionals_router.put('/{id}/match_requests/{match_request_id}')
-def match_job_ad(id: int, match_request_id: int, x_token: str = Header(None)):
+def accept_match_request(id: int, match_request_id: int, x_token: str = Header(None)):
     user = get_user_or_raise_401(x_token)
 
     if not user:
