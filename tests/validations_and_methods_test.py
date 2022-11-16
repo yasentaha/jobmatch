@@ -1,6 +1,5 @@
 import unittest
-from server.data.models import WorkPlace, Skill, Status, Town
-from server.data.database import read_query, update_query, read_query_single_element, insert_query
+from server.data.models import Skill
 from server.common import validations_and_methods
 
 class ValidationService_Should(unittest.TestCase):
@@ -17,16 +16,32 @@ class ValidationService_Should(unittest.TestCase):
         expected = True
         self.assertEqual(expected, result)
     
-    def test_validateStatus_returns_False_when_DataIsWrong(self):
+    def test_validateStatusForJobAd_returns_False_when_DataIsWrong(self):
         status = ''
-        result = validations_and_methods.validate_status(status)
+        for_job_ad = True
+        result = validations_and_methods.validate_status(status, for_job_ad)
         expected = False
         self.assertEqual(expected, result)
     
-    def test_validateStatus_returns_True_when_DataIsCorrect(self):
-        status = 'Active'
-        result = validations_and_methods.validate_status(status)
+    def test_validateStatusForJobAd_returns_True_when_DataIsCorrect(self):
+        status = "Active"
+        for_job_ad = True
+        result = validations_and_methods.validate_status(status, for_job_ad)
         expected = True
+        self.assertEqual(expected, result)
+    
+    def test_validateStatusForResume_returns_True_when_DataIsCorrect(self):
+        status = 'Private'
+        for_job_ad = False
+        result = validations_and_methods.validate_status(status, for_job_ad)
+        expected = True
+        self.assertEqual(expected, result)
+    
+    def test_validateStatusForResume_returns_False_when_DataIsWrong(self):
+        status = 'agfag'
+        for_job_ad = False
+        result = validations_and_methods.validate_status(status, for_job_ad)
+        expected = False
         self.assertEqual(expected, result)
     
     def test_validateSalary_returns_True_when_SalaryRangeIsCorrect(self):
@@ -93,7 +108,6 @@ class ValidationService_Should(unittest.TestCase):
         expected = (800, 2800)
         self.assertEqual(expected, result)
     
-
     def test_returnTownIdByName_returnsId_WhenTownPresent(self):
         read_single_data_func = lambda q, town_id: (28,)
         expected = 28
@@ -149,4 +163,41 @@ class ValidationService_Should(unittest.TestCase):
         expected = generated_id
         self.assertEqual(expected, result)
     
+    def test_validEmail_returns_Email_when_valid(self):
+        email = 'yasen@gmail.com'
+        expected = email
+        result = validations_and_methods.valid_email(email)
+        self.assertEqual(expected, result)
+
+    def test_validEmail_returns_None_when_invalidEmailExtension(self):
+        email = 'yasen@gmail'
+        expected = None
+        result = validations_and_methods.valid_email(email)
+        self.assertEqual(expected, result)
+
+    def test_validEmail_returns_None_when_invalidEmail_NoAtMail(self):
+        email = 'yasengmail.com'
+        expected = None
+        result = validations_and_methods.valid_email(email)
+        self.assertEqual(expected, result)
+
+
+    def test_validUsername_returns_userName_when_valid(self):
+        user_name = 'yasen_taha'
+        expected = user_name
+        result = validations_and_methods.valid_username(user_name)
+        self.assertEqual(expected, result)
+
+    def test_validUsername_returns_None_when_lessThanTwoChars(self):
+        user_name = 'y'
+        expected = None
+        result = validations_and_methods.valid_username(user_name)
+        self.assertEqual(expected, result)
+
+    def test_validUsername_returns_None_when_moreThanThirtyChars(self):
+        user_name = 'yasenyasenyasenyasenyasenyaseny'
+        expected = None
+        result = validations_and_methods.valid_username(user_name)
+        self.assertEqual(expected, result)
+
     

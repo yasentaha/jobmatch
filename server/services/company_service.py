@@ -4,9 +4,9 @@ from mariadb import DataError
 
 
 
-def get_company_by_id(id: int):
+def get_company_by_id(id: int, read_data = read_query):
     
-    data = read_query(
+    data = read_data(
         '''SELECT u.id,u.user_name,c.company_name,c.description,u.email,u.phone,u.address,
                 t.name,c.successful_matches
         FROM 
