@@ -1,7 +1,7 @@
-from server.data.database import read_query, insert_query, update_query
+from server.data.database import read_query, update_query
 from server.data.models import Professional, Role
-from server.common.responses import BadRequest
-from mariadb import DataError, OperationalError
+
+from mariadb import DataError
 
 def all(search: str | None = None, search_by: str | None = None):
     if search is None:
@@ -43,8 +43,11 @@ def all(search: str | None = None, search_by: str | None = None):
     return (Professional.from_query_result(*row) for row in data)
 
 
-def get_professional_by_id(id: int):
-    data = read_query(
+def get_professional_by_id(id: int,read_data=None):
+    if read_data is None:
+        read_data = read_query
+
+    read_data(
         '''SELECT u.id, u.user_name,u.email,u.phone,u.address,t.name,
             p.first_name,p.last_name,p.summary,p.busy
                 FROM users as u
@@ -54,7 +57,7 @@ def get_professional_by_id(id: int):
                 ON t.id=u.town_id
             WHERE u.id=? and u.role =?''', (id,Role.PROFESSIONAL))
 
-    return next((Professional.from_query_result(*row) for row in data), None)
+    return next((Professional.from_query_result(*row) for row in read_data), None)
 
 
 def edit_professional(id:int,professional: Professional,update_data=None):
