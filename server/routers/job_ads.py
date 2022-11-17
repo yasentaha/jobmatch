@@ -164,10 +164,10 @@ def send_match_request(id: int, resume_id: int, x_token= Header(None)):
 
     if not resume:
         return NotFound(f'Resume with id {resume_id} does not exist!')
-    
 
     if resume.professional_id != user.id:
         return Forbidden('You do not own this Resume!')
+    
 
     company = company_service.get_company_by_id(job_ad.company_id)
 

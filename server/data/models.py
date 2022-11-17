@@ -1,5 +1,4 @@
-from datetime import date, datetime
-from pydantic import BaseModel, constr
+from pydantic import BaseModel
 
 
 class LoginData(BaseModel):
@@ -56,7 +55,6 @@ class Skill(BaseModel):
             id=id,
             name=name,
             stars=stars)
-
 
 class Professional(BaseModel):
     id: int | None
