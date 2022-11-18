@@ -31,8 +31,11 @@ def salary_range_threshold(salary_range:tuple, threshold=int):
     return int(min_salary), int(max_salary)
 
 def parse_skills(skills:str) -> tuple:
-    parsed_skills = tuple(remove_under_from_skill(skill) for skill in skills.split(','))
+    if ',' in skills:
+        parsed_skills = tuple(remove_under_from_skill(skill) for skill in skills.split(','))
 
+    else:
+        parsed_skills = f"('{remove_under_from_skill(skills)}')"
     return parsed_skills
 
 def remove_under_from_skill(skill:str):

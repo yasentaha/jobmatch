@@ -167,7 +167,10 @@ def get_all_active_by_location(location:str):
 
 def get_all_active_by_skills(skills:str, combined:bool):
     skills_tuple = parse_skills(skills)
+    count = len(skills_tuple)
     if combined == True:
+        if not isinstance(skills_tuple, tuple):
+            count = 1
         data = read_query(f'''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
                         j.work_place, j.status, t.name, j.company_id, j.views
                         FROM 
@@ -182,7 +185,7 @@ def get_all_active_by_skills(skills:str, combined:bool):
                         j.status = "Active"
                         AND s.name IN {skills_tuple}
                         GROUP by j.id
-                        HAVING count(distinct s.name) = {len(skills_tuple)}''')
+                        HAVING count(distinct s.name) = {count}''')
     else:
         data = read_query(f'''SELECT j.id, j.title, j.description, j.min_salary, j.max_salary, 
                         j.work_place, j.status, t.name, j.company_id, j.views

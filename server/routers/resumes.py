@@ -130,7 +130,7 @@ def send_match_request(id: int, job_ad_id:int, x_token= Header(None)):
     if user.role != Role.COMPANY:
         return Forbidden('Only companies can initiate match requests to professionals.')
 
-    resume = get_resume_by_id(id)   
+    resume = get_resume_by_id(id)
 
     if not resume:
         return NotFound(f'Resume with id {id} does not exist!')

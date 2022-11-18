@@ -47,7 +47,7 @@ def get_professional_by_id(id: int,read_data=None):
     if read_data is None:
         read_data = read_query
 
-    read_data(
+    data = read_data(
         '''SELECT u.id, u.user_name,u.email,u.phone,u.address,t.name,
             p.first_name,p.last_name,p.summary,p.busy
                 FROM users as u
@@ -57,7 +57,7 @@ def get_professional_by_id(id: int,read_data=None):
                 ON t.id=u.town_id
             WHERE u.id=? and u.role =?''', (id,Role.PROFESSIONAL))
 
-    return next((Professional.from_query_result(*row) for row in read_data), None)
+    return next((Professional.from_query_result(*row) for row in data), None)
 
 
 def edit_professional(id:int,professional: Professional,update_data=None):

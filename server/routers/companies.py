@@ -38,13 +38,13 @@ def get_companies(search: str | None = None, search_by: str | None = None, sort:
 def get_company_by_Id(id: int, x_token: str = Header(None)):
     user = get_user_or_raise_401(x_token)
 
-    company = company_service.get_company_by_id(id)
+    if not user:
+        return Unauthorized('Please log in!')
 
+    company = company_service.get_company_by_id(id)
+    
     if company is None:
         return NotFound(f'Company with ID: {id} not found!')
-
-    if not user:
-        return Forbidden('Please log in!')
     
     return CompanyResponseModel(
         company= company,
@@ -54,20 +54,19 @@ def get_company_by_Id(id: int, x_token: str = Header(None)):
 @companies_router.get('/{id}/job_ads')
 def get_companies_active_job_ads_by_Id(id: int, x_token: str = Header(None)):
     user = get_user_or_raise_401(x_token)
-
-    company = company_service.get_company_by_id(id)
     
     if not user:
         return Unauthorized('Please log in!')
+
+    company = company_service.get_company_by_id(id)
     
     if not company:
-        return Unauthorized(f'Company with ID: {id} not found!')
+        return NotFound(f'Company with ID: {id} not found!')
     
     job_ads = get_all_active_job_ads_by_company_id(id)
 
     if not job_ads:
         return NotFound(f'There are no active Job ads for company with ID: {id}')
-
 
     return PersonalCompanyResponseModel(
         company= company,
@@ -78,14 +77,14 @@ def get_companies_active_job_ads_by_Id(id: int, x_token: str = Header(None)):
 @companies_router.get('/{id}/archived_job_ads')
 def get_companies_archived_job_ads_by_Id(id: int, x_token: str = Header(None)):
     user = get_user_or_raise_401(x_token)
-
-    company = company_service.get_company_by_id(id)
     
     if not user:
         return Unauthorized('Please log in!')
+
+    company = company_service.get_company_by_id(id)
     
     if not company:
-        return Unauthorized(f'Company with ID: {id} not found!')
+        return NotFound(f'Company with ID: {id} not found!')
     
     if user.id == id:
         archived_job_ads = get_all_archived_job_ads_by_company_id(id)
@@ -94,7 +93,6 @@ def get_companies_archived_job_ads_by_Id(id: int, x_token: str = Header(None)):
 
     if not archived_job_ads:
         return NotFound(f'There are no archived Job ads for company with ID: {id}')
-
 
     return PersonalCompanyResponseModel(
         company= company,
@@ -196,12 +194,16 @@ def reject_match_request(id: int, match_request_id: int, x_token: str = Header(N
     if user.id != id:
         return Forbidden('You cannot view the Match Requests of others.')
 
-    if not match_request_service.company_owns_match_request(user.id, match_request_id):
-        return Forbidden('You cannot reject this match request!')
-
     company = company_service.get_company_by_id(id)
+    if not company:
+        return NotFound(f'Company with id {id} does not exist.')
 
     match_request = match_request_service.get_match_request_by_id(match_request_id)
+    if not match_request:
+        return NotFound(f'Match request with id {match_request_id} does not exist.')
+
+    if not match_request_service.company_owns_match_request(user.id, match_request_id):
+        return Forbidden('You cannot reject this match request!')
     
     resume = resume_service.get_resume_by_id(match_request.resume_id)
     

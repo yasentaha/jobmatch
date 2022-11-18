@@ -77,7 +77,7 @@ def edit_professional_by_id(id: int, professional: Professional, x_token: str = 
     if edited_user_info:
         edited_professional = edit_professional(id, professional)
         if edited_professional:
-            return Success(f'Successfully updated info for professional with name {professional.first_name} {professional.last_name}!')
+            return Success(f'Successfully updated info for professional {professional.first_name} {professional.last_name}!')
     else:
         return BadRequest('Your query is incorrect, please review your new info.')
 
@@ -85,30 +85,30 @@ def edit_professional_by_id(id: int, professional: Professional, x_token: str = 
 @professionals_router.get('/{id}/resumes')
 def professional_by_id(id: int, x_token: str = Header(None)):
     user = get_user_or_raise_401(x_token)
-
-    if user:
-        if user.id == id:
-            resumes = resume_service.get_all_resumes_by_professional_id(id)
-            resumes_full = [ResumeWithSkillsResponseModel(full_name=user_service.get_professional_fullname_by_id(resume.professional_id), 
-                resume=resume, 
-                skills=resume_service.get_all_resume_skills_by_id(resume.id)) for resume in resumes]
-            return resumes_full
-
-        if user.role == Role.COMPANY:
-            resumes = resume_service.get_all_active_resumes_by_professional_id(id)
-            resumes_full = [ResumeWithSkillsResponseModel(full_name=user_service.get_professional_fullname_by_id(resume.professional_id), 
-                resume=resume, 
-                skills=resume_service.get_all_resume_skills_by_id(resume.id)) for resume in resumes]
-            return resumes_full
-        
-        if user.role == Role.PROFESSIONAL:
-            resumes = resume_service.all_active_resumes_without_job_salary_and_description_by_professional_id(id)
-            resumes_full = [ResumeWithoutDescriptionAndSalaryResponse(full_name=user_service.get_professional_fullname_by_id(resume.professional_id), 
-                resume=resume) for resume in resumes]
-            return resumes_full
-            
-    else:
+    resumes_full = []
+    if not user:
         return Unauthorized('Please log in!')
+    if user.id == id:
+        resumes = resume_service.get_all_resumes_by_professional_id(id)
+        if resumes:
+            resumes_full = [ResumeWithSkillsResponseModel(full_name=user_service.get_professional_fullname_by_id(resume.professional_id), 
+            resume=resume, 
+            skills=resume_service.get_all_resume_skills_by_id(resume.id)) for resume in resumes]
+
+    if user.role == Role.COMPANY:
+        resumes = resume_service.get_all_active_resumes_by_professional_id(id)
+        if resumes:
+            resumes_full = [ResumeWithSkillsResponseModel(full_name=user_service.get_professional_fullname_by_id(resume.professional_id), 
+            resume=resume, 
+            skills=resume_service.get_all_resume_skills_by_id(resume.id)) for resume in resumes]
+    
+    if user.role == Role.PROFESSIONAL:
+        resumes = resume_service.all_active_resumes_without_job_salary_and_description_by_professional_id(id)
+        if resumes:
+            resumes_full = [ResumeWithoutDescriptionAndSalaryResponse(full_name=user_service.get_professional_fullname_by_id(resume.professional_id), 
+            resume=resume) for resume in resumes]
+    
+    return resumes_full if resumes_full else NotFound('No resumes for professional.')
 
 
 @professionals_router.get('/{id}/match_requests')
@@ -172,11 +172,15 @@ def reject_match_request(id: int, match_request_id: int, x_token: str = Header(N
 
     if user.id != id:
         return Forbidden('You cannot view the Match Requests of others.')
+    
+    match_request = match_request_service.get_match_request_by_id(match_request_id)
+
+    if not match_request:
+        return NotFound(f'Match request with id {match_request_id} does not exist.')
 
     if not match_request_service.professional_owns_match_request(user.id, match_request_id):
         return Forbidden('You cannot reject this match request!')
 
-    match_request = match_request_service.get_match_request_by_id(match_request_id)
 
     if match_request_service.delete_match_request(match_request_id):
         #send email to Company that they got rejected

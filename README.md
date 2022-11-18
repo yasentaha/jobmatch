@@ -199,6 +199,11 @@ Email Notification:
 </br>
 
 ## Room for improvement
+There are some improvements that can be made and this solely because this project had a tight deadline. The project is the final team assignment for the three contributors, part of their Python Development Course (less than four weeks between posting the assignment and the deadline).
+- unit tests do not cover the whole functionality
+- refactoring in the server.data.models - some pydantic models can be deleted, for others inheritance and polymorphism can be applied
+- refactoring for methods and endpoints - some of the validations and methods for Companies/Professionals and Job-Ads/Resumes are pretty similar and they can be cut in half similar to the methods used in the mailjet service
+- transactional behavior for some of the routers that use quite a few SQL queries
 - there are no pagination options so far for any of the searches and sorting only when viewing Professionals and Companies
 - if a Professional accepts a match-request he must automatically reject all the other ones waiting for her/him
 - a pool of skills with their ids needs to be present so that people can choose from them and not input strings manually, but this is for presentation purposes
