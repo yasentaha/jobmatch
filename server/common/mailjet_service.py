@@ -2,8 +2,8 @@ from mailjet_rest import Client
 import os
 from server.data.models import JobAd, Resume
 
-api_key = '7dbfc91981f627bf165a003229e3bf36'
-api_secret = '55ee99b3b3b5487eda8bdcb561f2c42a'
+api_key = '7dbfc****'
+api_secret = '55ee9*****'
 mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
 def send_registration_email(email:str, name:str):
